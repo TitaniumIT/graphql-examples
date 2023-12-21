@@ -1,0 +1,18 @@
+mutation buyProduct($productId:String!,$customerId:EmailAddressScalar!)  {
+  buy(productId:$productId,customerId:$customerId){
+    ...buyProductView
+  }
+}
+
+fragment buyProductView on Product{
+    id
+    inStock
+    actionsAllowed
+    name
+    inBasket @client
+    inTransit: productsInTransit(customerId:$customerId){
+      id
+      productId
+      state
+    }
+}

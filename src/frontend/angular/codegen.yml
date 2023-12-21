@@ -1,0 +1,28 @@
+overwrite: true
+schema:   
+  - "./src/app/models/*.graphqls"
+documents: "./src/app/models/*.graphql"
+config:
+  addExplicitOverride: true
+  apolloAngularVersion: 3
+  onlyOperationTypes: true
+  querySuffix: 'QueryService'
+  mutationSuffix: 'MutationService'
+  subscriptionSuffix: 'SubscriptionService'
+  omitOperationSuffix: true
+  inlineFragmentTypes: combine
+  exportFragmentSpreadSubTypes: true
+  scalars:
+     EmailAddressScalar : string
+generates:
+  ./src/app/models/generated-operations.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-apollo-angular"
+  ./src/app/models/generated-cacheOptions.ts:
+    plugins:
+      - "fragment-matcher"
+  ./src/app/models/generated-clientHelpers.ts:
+    plugins:
+     - typescript-apollo-client-helpers

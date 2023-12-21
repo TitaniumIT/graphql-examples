@@ -1,0 +1,21 @@
+<div class="card">
+    <h5 class="card-header">Shop</h5>
+    <div class="card-body">
+        <app-products (selectedProductId)="show($event)">
+
+        </app-products>
+    </div>
+</div>
+<div class="card">
+    <h5 class="card-header">Product details</h5>
+    <div class="card-body">
+        <app-product [productId]="selectedProduct"></app-product>
+    </div>
+</div>
+
+<div class="card">
+    <h5 class="card-header">My products</h5>
+    <div class="card-body">
+        <app-basket></app-basket>
+    </div>
+</div>

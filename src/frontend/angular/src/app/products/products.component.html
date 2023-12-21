@@ -1,0 +1,41 @@
+<table class="table table-sm">
+    <thead class="table-light">
+        <th scope="col">Name</th>
+        <th scope="col">Description</th>
+        <th scope="col">In Stock</th>
+        <th scope="col">Actions</th>
+    </thead>
+    <tbody *ngIf="! loading">
+            <tr *ngFor="let product of products" scope="row" (click)="Select(product)" [ngClass]="{ 'table-active' : product.id == selectedId }">
+                <td>{{product.name}}</td>
+                <td>{{product.description}}</td>
+                <td>{{product.inStock}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary" (click)="Buy(product)"
+                        *ngIf="product.actionsAllowed?.includes('Buy')">Buy</button>
+                    <div *ngIf="product.actionsAllowed?.includes('Processing')" class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                </td>
+            </tr>
+    </tbody>
+    <tbody *ngIf="loading">
+        <tr>
+            <td colspan="4">Loading</td>
+        </tr>
+    </tbody>
+</table>
+<nav *ngIf="!loading">
+    <ul class="pagination">
+        <li class="page-item">
+          <a class="page-link" role="button" aria-label="Previous" [ngClass]="{ 'disabled' : !pageInfo.hasPreviousPage}" (click)="PreviousPage()">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" role="button" aria-label="Next" [ngClass]="{ 'disabled' : !pageInfo.hasNextPage}" (click)="NextPage()">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+  </nav>

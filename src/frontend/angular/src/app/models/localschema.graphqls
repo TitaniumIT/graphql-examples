@@ -1,0 +1,9 @@
+directive @client(always: Boolean) on FIELD
+
+extend type Product {
+    inBasket: Boolean
+    nrOrderd: Int
+    nrInTransit: Int
+    nrDeliverd: Int
+    nrCancelled:Int
+}

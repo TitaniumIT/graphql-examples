@@ -1,0 +1,13 @@
+
+subscription  basketEvents($customerId:EmailAddressScalar!){
+  statusChanged(customerId:$customerId){
+    ...ProductInTransitView
+  }
+}
+
+fragment ProductInTransitView on ProductInTransit{
+     id
+    productId
+    state
+    name
+}

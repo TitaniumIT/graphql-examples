@@ -1,0 +1,19 @@
+<table class="table">
+    <caption>customer:{{customerId}}</caption>
+    <thead>
+        <th scope="col">Name</th>
+        <th scope="col">ordered</th>
+        <th scope="col">intansit</th>
+        <th scope="col">deliverd</th>
+        <th scope="col">cancelled</th>
+    </thead>
+    <tbody>
+            <tr *ngFor="let product of inBasket" scope="row" >
+                <td>{{product.name}}</td>
+                <td>{{product.nrOrderd}}</td>
+                <td>{{ product.nrInTransit }}</td>
+                <td>{{ product.nrDeliverd }}</td>
+                <td>{{ product.nrCancelled }}</td>
+            </tr>
+    </tbody>
+</table>

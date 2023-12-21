@@ -1,0 +1,28 @@
+<div  *ngIf="product && !loading">
+    <div class="mb-3">
+        <label for="name" class="form-label">Product name</label>
+        <input class="form-control" readonly id="name" [value]="product.name">
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Product description</label>
+        <input class="form-control" readonly id="description" [value]="product.description">
+    </div>
+
+    <div class="alert alert-primary" role="alert" *ngIf="product.actionsAllowed?.includes('Processing')">Processing
+        Order</div>
+
+    <div class="card">
+        <div class="card-header">
+            Product categories
+        </div>
+        <ul class="list-group list-group-flush" *ngFor=" let category of categories">
+            <li class="list-group-item" [ngClass]="{ 'active': hasCategory(category)}">{{category.name}}</li>
+        </ul>
+    </div>
+</div>
+<div *ngIf="loading"> 
+    Loading
+</div>
+<div  *ngIf="!product && !loading">
+  No product selected
+</div>
