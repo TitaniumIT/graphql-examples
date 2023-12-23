@@ -18,7 +18,7 @@ import { merge } from 'rxjs';
 
 const uri = 'localhost:7265/graphql'; // <-- add the URL of the GraphQL server here
 export function createApollo(httpLink: HttpLink, toastr: ToastrService): ApolloClientOptions<any> {
-  const http = httpLink.create({ uri:`https://${uri}` });
+  const http = httpLink.create({ uri:`http://${uri}` });
   const error = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
 
@@ -31,7 +31,7 @@ export function createApollo(httpLink: HttpLink, toastr: ToastrService): ApolloC
 
   const ws = new GraphQLWsLink(
     createClient({
-      url: `wss://`+uri,
+      url: `ws://`+uri,
     })
   );
   

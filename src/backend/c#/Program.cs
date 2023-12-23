@@ -5,6 +5,7 @@ using System.Text;
 using GraphQLServer.Schema;
 using GraphQL.Execution;
 using GraphQL.MicrosoftDI;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,7 @@ builder.Services.AddGraphQL(b => b
       {
           options.ThrowOnUnhandledException = true;
       })
-     // .UseApolloTracing()
+    //  .UseApolloTracing()
       );
 
 builder.Services.AddLogging(builder => builder.AddConsole());
@@ -54,8 +55,6 @@ builder.Services.AddAuthorization(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
