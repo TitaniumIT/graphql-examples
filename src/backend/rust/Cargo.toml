@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 juniper = "0.16.0"
+juniper_warp = "0.8.0"
+tokio =  { version = "1.37.0", features = ["full"] }
+warp = "0.3.6"
