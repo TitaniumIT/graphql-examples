@@ -11,11 +11,21 @@ async fn main() {
 
     let schema = Arc::new(schema());
 
+    let static_product_list = Arc::new( vec![
+        Product::new(1 ,"titanium","Strong metal" ,  vec![1,3],10),   
+        Product::new (2 , "oak" , "strong wood" , vec![2, 3 ], 5),
+        Product::new (3 , "iron" , "a metal" , vec![1, 3], 5),
+        Product::new (4 , "silver" , "a precious metal" , vec![1, 3 ], 5),
+        Product::new (5 , "gold" , "a rare precious metal" , vec![1, 3 ], 5),
+        Product::new (6 , "porc" , "meat based on a Pig" , vec![4 ], 5),
+        Product::new (7 , "beef" , "meat base on a cow" , vec![4 ], 5),
+        Product::new (8 , "bread" , "made from wheat" , vec![4 ], 5) ]);
+
     let routes = (warp::post()
         .and(warp::path("graphql"))
         .and(juniper_warp::make_graphql_filter(
             schema.clone(),
-            warp::any().map(|| Context),
+            warp::any().map(move|| Context{ products: static_product_list.clone()} ),
         )))
         .or(warp::get()
         .and(warp::path("playground"))
@@ -28,43 +38,39 @@ async fn main() {
 }
 
 struct Context {
-    products: Vec<Product>
+    products : Arc<Vec<Product>>
 }
 
-impl Context {
-    fn new() -> Self {
-        Self { 
-            products:  vec![
-                Product { id:ProductId(1) , name:"titanium".to_string() , description:"Strong metal" , categories: vec![1,3],stock:10},
-                Product {id:ProductId(2), name:"oak".to_string() , description:"strong wood" , categories: vec![2, 3 ], stock: 5},
-                Product {id:ProductId(3) , name:"iron" , description:"a metal" , categories: vec![1, 3 ], stock:5},
-                Product {id:ProductId(4) , name:"silver" , description:"a precious metal" ,categories: vec![1, 3 ], stock:5},
-                Product {id:ProductId(5) , name:"gold" , description:"a rare precious metal" , categories: vec![1,3 ], stock:5},
-                Product {id:ProductId(6) , name:"porc" ,description: "meat based on a Pig" , categories: vec![4 ], stock:5},
-                Product {id:ProductId(7) , name:"beef" , description:"meat base on a cow" , categories: vec![4 ], stock:5},
-                Product {id:ProductId(8) , name:"bread" ,description: "made from wheat" , categories: vec![4 ], stock:5}
-            ]
-        }
-    }
-}
 
 impl juniper::Context for Context {}
-type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
+type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Context>>;
 
 fn schema() -> Schema {
-    Schema::new(Query, EmptyMutation::new(), EmptySubscription::new())
+    Schema::new(Query, Mutation, EmptySubscription::new())
 }
 
 struct Query;
 
 #[graphql_object(context = Context)]
 impl Query {
-    async fn products<'ctx>(context: &'ctx Context) -> &Vec<Product> {
-        &context.products
+    async fn products<'ctx>(context: &'ctx Context) -> Arc<Vec<Product>> {
+        context.products.clone()
     }
 }
 
-#[derive(GraphQLScalar)]
+
+struct Mutation;
+
+#[graphql_object(context = Context)]
+impl Mutation {
+    async fn buy<'ctx>(context: &'ctx Context,id: ProductId,customerId:String,amount:Option<i32>) -> &Product {
+        let mut product = context.products.iter().find(|p| p.id == id).unwrap();
+      //  product.stock = product.stock - amount.or_else(||Some(1)).unwrap();
+        product
+    }
+}
+
+#[derive(GraphQLScalar,PartialEq)]
 #[graphql(transparent)]
 struct ProductId(i32);
 
@@ -77,6 +83,9 @@ struct Product{
 }
 
 impl Product{
+    fn new(id:i32,n:&str,d:&str,c:Vec<i32>,s:i32) -> Self {
+       Self{ id:ProductId(id),name:n.to_string(),description:d.to_string(),categories:c,stock:s}
+    }
 }
 
 #[graphql_object]
@@ -87,6 +96,9 @@ impl Product{
   }
   fn name(&self) -> &String {
     &self.name
+  }
+  fn stock(&self) -> &i32{
+    &self.stock
   }
 }
 
