@@ -121,5 +121,7 @@ impl Query {
 }
 
 #[derive(GraphQLScalar)]
+#[derive(PartialEq)]
+#[derive(Clone)]
 #[graphql(transparent)]
 pub struct EmailAddressScalar(String);

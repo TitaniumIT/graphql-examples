@@ -125,14 +125,20 @@ impl Product {
             context.categories().await.iter().filter(|c| self.categories.contains( c.id() ) ).cloned().collect()
     }
 
-    pub async fn products_in_transit'ctx>(&self,
-        context: &'ctx Context,
+    pub async fn products_in_transit<'ctx>(&self,
+          context: &'ctx Context,
          customer_id: EmailAddressScalar) -> Vec<ProductInTransit>  {
-           
+            
+            let Context(context) = context;
+            let context = context.read().await;
+
+            context.products_in_transit.iter()
+                .filter(|p| p.customer_id == customer_id && p.product_id() == self.id()).cloned().collect()
         }
 }
 
 
+#[derive(Clone)]
 pub struct ProductInTransit {
     product: Box<Product>,
     state: String,
@@ -155,6 +161,27 @@ impl ProductInTransit {
 impl ProductInTransit {
 
     pub fn state(&self) -> &String {
+        &self.state
+    }
+
+    pub fn product_id(&self) -> &String{
+        &self.product.id
+    }
+
+    pub fn id(&self) -> &String{
         &self.id
     }
+
+    pub fn name(&self) -> &String{
+        &self.product.name
+    }
+
+    pub fn description(&self) -> &String{
+        &self.product.description
+    }
+
+    pub fn customer_id(&self) -> &EmailAddressScalar{
+        &self.customer_id
+    }
+
 }
