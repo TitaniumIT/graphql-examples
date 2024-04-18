@@ -10,3 +10,5 @@ juniper = "0.16.0"
 juniper_warp = "0.8.0"
 tokio =  { version = "1.37.0", features = ["full"] }
 warp = "0.3.6"
+log = { version = "0.4", optional = true }
+env_logger = "0.11.3"
