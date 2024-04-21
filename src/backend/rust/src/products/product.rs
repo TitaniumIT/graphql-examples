@@ -1,4 +1,4 @@
-use juniper::{graphql_object};
+use juniper::graphql_object;
 use std::{cmp::Ordering, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
