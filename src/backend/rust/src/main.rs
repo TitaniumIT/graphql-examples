@@ -6,14 +6,15 @@ use tokio::{self, sync::RwLock};
 use warp::Filter;
 
 mod categorie;
-mod mutation;
 mod products;
 mod relaytypes;
 mod schema;
+mod staticdata;
 
 use crate::categorie::*;
 use crate::products::product::{self, Product};
 use crate::schema::*;
+use crate::staticdata::StaticData;
 
 #[tokio::main]
 async fn main() {

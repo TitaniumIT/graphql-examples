@@ -3,11 +3,10 @@ use std::{cmp::Ordering, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 use crate::{
-    relaytypes::{Connection, Edge, PageInfo},
-    AvailableActionsInterfaceTypeValue, Category, Context, EmailAddressScalar, StaticData,
+    relaytypes::{Connection, Edge, PageInfo}, scalars::EmailAddressScalar, Category, Context, StaticData
 };
 
-use super::{backorder::ProductInBackorder, intransit::ProductInTransit, IProductValue};
+use super::{backorder::ProductInBackorder, intransit::ProductInTransit, AvailableActionsInterfaceTypeValue, IProductValue};
 
 #[derive(Clone)]
 pub struct Product {

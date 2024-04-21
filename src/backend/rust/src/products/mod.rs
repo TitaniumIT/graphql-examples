@@ -1,4 +1,5 @@
 use juniper::{graphql_interface, GraphQLUnion};
+
 use crate::Context;
 
 use self::{backorder::ProductInBackorder, intransit::ProductInTransit, product::Product};
@@ -21,4 +22,10 @@ pub trait IProduct {
     fn id(&self) -> &String;
     fn name(&self) -> &String;
     fn description(&self) -> &String;
+}
+
+#[graphql_interface(for = [Product, ProductInTransit , ProductInBackorder])]
+#[graphql(Context = Context)]
+pub trait AvailableActionsInterfaceType {
+    fn actions_allowed() -> Vec<String>;
 }

@@ -1,5 +1,5 @@
-use super::{product::Product, IProductValue};
-use crate::{AvailableActionsInterfaceTypeValue, Context};
+use crate::Context;
+use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 use juniper::graphql_object;
 
 #[derive(Clone)]

@@ -2,9 +2,9 @@ use std::{ops::Deref, sync::Arc};
 
 use juniper::graphql_object;
 
-use crate::{AvailableActionsInterfaceTypeValue, Context, EmailAddressScalar, StaticData};
+use crate::{ scalars::EmailAddressScalar, Context, StaticData};
 
-use super::{product::Product, IProductValue};
+use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 
 #[derive(Clone)]
 pub struct ProductInTransit {

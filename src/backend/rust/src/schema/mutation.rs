@@ -1,6 +1,6 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::{products::intransit::ProductInTransit, Context, EmailAddressScalar, Product};
+use crate::{products::intransit::ProductInTransit, scalars::EmailAddressScalar, Context, Product};
 
 pub struct Mutation;
 
@@ -93,21 +93,4 @@ impl Mutation {
             }
         }
     }
-
-    // Field<ProductInBackorderType, ProductInBackorder>("Restock")
-    // .AuthorizeWithPolicy("IsManager")
-    // .Argument<NonNullGraphType<StringGraphType>>("ProductId")
-    // .Resolve(ctx =>
-    // {
-    //     var productInBackorder = StaticDataSource.ProductInBackorders.FirstOrDefault(x => x.Id == ctx.GetArgument<string>("ProductId"));
-    //     if (productInBackorder == null)
-    //     {
-    //         ctx.Errors.Add(new($"No product in backorder found with id {ctx.GetArgument<string>("ProductId")}"));
-    //     }
-    //     else
-    //     {
-    //         productInBackorder.Restock();
-    //     }
-    //     return productInBackorder;
-    // });
 }

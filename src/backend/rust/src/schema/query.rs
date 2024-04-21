@@ -8,41 +8,12 @@ use std::pin::Pin;
 use std::{sync::Arc, time::Duration};
 use tokio::{self, sync::RwLock, time::sleep};
 
+use crate::Context;
 use crate::{
-    mutation::Mutation,
     product::*,
     products::{backorder::ProductInBackorder, intransit::ProductInTransit, AllProductTypes},
     Category,
 };
-
-pub struct StaticData {
-    pub products: Arc<RwLock<Vec<Product>>>,
-    pub categories: Arc<RwLock<Vec<Category>>>,
-    pub products_in_transit: Arc<RwLock<Vec<ProductInTransit>>>,
-    pub products_in_backorders: Arc<RwLock<Vec<ProductInBackorder>>>,
-    pub status_channel: (Sender<ProductInTransit>, Receiver<ProductInTransit>),
-}
-
-impl StaticData {
-    pub async fn categories(&self) -> Vec<Category> {
-        sleep(Duration::from_millis(1000)).await;
-        self.categories.read().await.to_vec()
-    }
-}
-
-#[derive(Clone)]
-pub struct Context {
-    pub data: Arc<StaticData>,
-    pub ismanager: bool,
-}
-
-impl juniper::Context for Context {}
-
-pub type Schema = RootNode<'static, Query, Mutation, Subscriptions>;
-
-pub fn schema() -> Schema {
-    Schema::new(Query, Mutation, Subscriptions)
-}
 
 pub struct Query;
 
@@ -152,40 +123,5 @@ impl Query {
 
     pub async fn categories<'ctx>(context: &'ctx Context) -> Vec<Category> {
         context.data.categories().await
-    }
-}
-
-#[derive(GraphQLScalar, PartialEq, Clone)]
-#[graphql(transparent)]
-pub struct EmailAddressScalar(String);
-
-#[graphql_interface(for = [Product, ProductInTransit , ProductInBackorder])]
-#[graphql(Context = Context)]
-pub trait AvailableActionsInterfaceType {
-    fn actions_allowed() -> Vec<String>;
-}
-pub struct Subscriptions;
-
-type ProductsIntransitStream =
-    Pin<Box<dyn Stream<Item = Result<ProductInTransit, FieldError>> + Send>>;
-
-#[graphql_subscription(context = Context)]
-impl Subscriptions {
-    pub async fn status_changed<'ctx>(
-        context: &'ctx Context,
-        customer_id: EmailAddressScalar,
-    ) -> ProductsIntransitStream {
-        let (_s,r) = &context.data.status_channel;
-        let receiver= r.clone();
-        let stream = async_stream::stream! {
-            loop {
-                if let Ok(product_changed) = receiver.recv().await {
-                    if product_changed.customer_id() == &customer_id {
-                        yield Ok(product_changed.clone())
-                    }
-                }
-            }
-        };
-        Box::pin(stream)
     }
 }
