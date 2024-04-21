@@ -58,7 +58,7 @@ impl Mutation {
             if let Some(index) = in_transit.iter().position(|p| p.id() == &product_in_transit_id)
             {
                 let product_in_transit = in_transit.get_mut(index).unwrap();
-                product_in_transit.deliver().await;
+                product_in_transit.deliver(context.data.clone()).await;
                 Ok(product_in_transit.clone())
             } else {
                 Err(FieldError::new(

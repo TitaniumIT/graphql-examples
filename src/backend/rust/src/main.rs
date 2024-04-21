@@ -1,5 +1,7 @@
 use std::env;
 use std::sync::Arc;
+use async_channel::unbounded;
+use juniper_graphql_ws::ConnectionConfig;
 use tokio::{self, sync::RwLock};
 use warp::Filter;
 
@@ -45,6 +47,7 @@ async fn main() {
         categories: Arc::new(RwLock::new(static_categorie_list)),
         products_in_transit: Arc::new(RwLock::new(Vec::new())),
         products_in_backorders: Arc::new(RwLock::new(Vec::new())),
+        status_channel: unbounded()
     });
 
     let cors = warp::cors()
@@ -63,6 +66,9 @@ async fn main() {
         .allow_credentials(true)
         .build();
 
+    let http_data = data.clone();
+    let ws_data = data.clone();
+
     let routes = (warp::post()
         .and(warp::path("graphql"))
         .and(juniper_warp::make_graphql_filter(
@@ -70,15 +76,25 @@ async fn main() {
             warp::any()
                 .and(warp::header::optional("managersecret"))
                 .map(move |managersecret: Option<String>| Context {
-                    data: data.clone(),
+                    data: http_data.clone(),
                     ismanager: managersecret == Some("I`m Manager".to_string()),
                 }),
         ))
         .with(cors.clone())
         .with(log))
+        .or(
+            warp::path("graphql").and(juniper_warp::subscriptions::make_ws_filter(
+                schema.clone(),
+                ConnectionConfig::new( Context {
+                    data: ws_data,
+                    ismanager: false,
+                }),
+            ))
+            .with(log),
+        )
     .or(warp::get()
         .and(warp::path("playground"))
-        .and(juniper_warp::playground_filter("/graphql", None))
+        .and(juniper_warp::playground_filter("/graphql", Some("/graphql") ))
         .with(log))
     .or(warp::any().map(warp::reply).with(cors.clone()).with(log));
 

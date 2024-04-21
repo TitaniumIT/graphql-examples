@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 use juniper::graphql_object;
 
@@ -24,8 +24,10 @@ impl ProductInTransit {
         }
     }
 
-    pub async fn deliver(&mut self)  {
+    pub async fn deliver(&mut self,data: Arc<StaticData>)  {
        self.state = "Deliverd".to_string();
+       let (s,_r) = &data.status_channel;
+       s.send(self.clone()).await.unwrap();
     }
 
     pub async fn cancel(&mut self,data: Arc<StaticData>)  {
@@ -33,6 +35,8 @@ impl ProductInTransit {
        let mut products = data.products.write().await;
        let product = products.iter_mut().find(|p| p.id() == &self.product_id).unwrap();
        product.restock();
+       let (s,_r) = &data.status_channel;
+       s.send(self.clone()).await.unwrap();
     }
 }
 
