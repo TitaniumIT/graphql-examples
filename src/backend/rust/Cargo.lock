@@ -463,7 +463,6 @@ dependencies = [
  "async-stream",
  "env_logger",
  "futures",
- "help",
  "juniper",
  "juniper_graphql_ws",
  "juniper_warp",
@@ -521,12 +520,6 @@ checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
 dependencies = [
  "http 0.2.12",
 ]
-
-[[package]]
-name = "help"
-version = "0.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5d2c6714f78261bbacbd07338eb21943fa5a25c67760287aecb6aefbec89062"
 
 [[package]]
 name = "hermit-abi"
