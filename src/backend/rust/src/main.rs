@@ -1,17 +1,16 @@
 use std::env;
 use std::sync::Arc;
 use tokio::{self, sync::RwLock};
-use warp::filters::cors::Cors;
 use warp::Filter;
 
 mod categorie;
-mod product;
+mod mutation;
+mod products;
 mod relaytypes;
 mod schema;
-mod mutation;
 
 use crate::categorie::*;
-use crate::product::*;
+use crate::products::product::{self, Product};
 use crate::schema::*;
 
 #[tokio::main]
@@ -41,29 +40,46 @@ async fn main() {
         Category::new("4", "food"),
     ];
 
-    let data = Arc::new(RwLock::new(StaticData {
-        products: static_product_list,
-        categories: static_categorie_list,
-        products_in_transit: Vec::new()
-    }));
+    let data = Arc::new(StaticData {
+        products: Arc::new(RwLock::new(static_product_list)),
+        categories: Arc::new(RwLock::new(static_categorie_list)),
+        products_in_transit: Arc::new(RwLock::new(Vec::new())),
+        products_in_backorders: Arc::new(RwLock::new(Vec::new())),
+    });
 
     let cors = warp::cors()
-        .allow_origins( vec!["http://localhost:4200","http://localhost:7265"] )
-        .allow_methods( vec!["POST","OPTIONS"])
-        .allow_headers(vec!["User-Agent", "Sec-Fetch-Mode", "Referer", "Origin", "Access-Control-Request-Method", 
-            "Access-Control-Request-Headers", "Content-Type" ])
-        .allow_credentials(true).build();
+        .allow_origins(vec!["http://localhost:4200", "http://localhost:7265"])
+        .allow_methods(vec!["POST", "OPTIONS"])
+        .allow_headers(vec![
+            "User-Agent",
+            "Sec-Fetch-Mode",
+            "Referer",
+            "Origin",
+            "Access-Control-Request-Method",
+            "managersecret",
+            "Access-Control-Request-Headers",
+            "Content-Type",
+        ])
+        .allow_credentials(true)
+        .build();
 
-    let routes = (
-        warp::post()
+    let routes = (warp::post()
         .and(warp::path("graphql"))
         .and(juniper_warp::make_graphql_filter(
             schema.clone(),
-            warp::any().map(move || Context(data.clone())),
-        )).with(cors.clone()).with(log))
+            warp::any()
+                .and(warp::header::optional("managersecret"))
+                .map(move |managersecret: Option<String>| Context {
+                    data: data.clone(),
+                    ismanager: managersecret == Some("I`m Manager".to_string()),
+                }),
+        ))
+        .with(cors.clone())
+        .with(log))
     .or(warp::get()
         .and(warp::path("playground"))
-        .and(juniper_warp::playground_filter("/graphql", None)).with(log))
+        .and(juniper_warp::playground_filter("/graphql", None))
+        .with(log))
     .or(warp::any().map(warp::reply).with(cors.clone()).with(log));
 
     warp::serve(routes).run(([127, 0, 0, 1], 7265)).await
