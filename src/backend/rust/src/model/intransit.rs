@@ -1,4 +1,4 @@
-use std::{ops::Deref, sync::Arc};
+use std::{sync::Arc};
 
 use juniper::graphql_object;
 

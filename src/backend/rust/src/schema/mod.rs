@@ -10,6 +10,7 @@ pub mod query;
 pub mod mutation;
 pub mod subscription;
 pub mod scalars;
+pub mod relaytypes;
 
 #[derive(Clone)]
 pub struct Context {

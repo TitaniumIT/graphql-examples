@@ -3,7 +3,7 @@ use std::pin::Pin;
 use futures::Stream;
 use juniper::{graphql_subscription, FieldError};
 
-use crate::{products::intransit::ProductInTransit, scalars::EmailAddressScalar, Context};
+use crate::{model::intransit::ProductInTransit, scalars::EmailAddressScalar, Context};
 pub struct Subscriptions;
 
 type ProductsIntransitStream =

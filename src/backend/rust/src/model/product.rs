@@ -3,10 +3,13 @@ use std::{cmp::Ordering, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 use crate::{
-    relaytypes::{Connection, Edge, PageInfo}, scalars::EmailAddressScalar, Category, Context, StaticData
+    relaytypes::{Connection, Edge}, scalars::EmailAddressScalar, Context, StaticData
 };
 
-use super::{backorder::ProductInBackorder, intransit::ProductInTransit, AvailableActionsInterfaceTypeValue, IProductValue};
+use super::{
+    backorder::ProductInBackorder, categorie::Category, intransit::ProductInTransit,
+    AvailableActionsInterfaceTypeValue, IProductValue,
+};
 
 #[derive(Clone)]
 pub struct Product {
@@ -31,42 +34,6 @@ impl PartialEq for Product {
     }
 }
 
-pub type ProductConnection = Connection<Product, String>;
-
-#[graphql_object(context = Context)]
-impl ProductConnection {
-    pub fn edges(&self) -> &[ProductEdge] {
-        self._edges()
-    }
-
-    pub fn items(&self) -> Vec<&Product> {
-        self._edges().iter().map(|p| p.node()).collect()
-    }
-
-    pub fn total_count(&self) -> i32 {
-        self.total_count
-    }
-
-    pub fn nodes(&self) -> Vec<&Product> {
-        self._nodes()
-    }
-
-    pub fn page_info(&self) -> PageInfo<'_> {
-        self._page_info()
-    }
-}
-
-pub type ProductEdge = Edge<Product, String>;
-
-#[graphql_object(context = Context)]
-impl ProductEdge {
-    pub fn node(&self) -> &Product {
-        &self.node
-    }
-    pub fn cursor(&self) -> &String {
-        &self.cursor
-    }
-}
 
 impl PartialOrd for Product {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -181,5 +148,3 @@ impl Product {
             .collect()
     }
 }
-
-

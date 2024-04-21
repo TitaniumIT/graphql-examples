@@ -2,17 +2,15 @@ use std::env;
 use std::sync::Arc;
 use async_channel::unbounded;
 use juniper_graphql_ws::ConnectionConfig;
+use model::categorie::Category;
 use tokio::{self, sync::RwLock};
 use warp::Filter;
 
-mod categorie;
-mod products;
-mod relaytypes;
+mod model;
 mod schema;
 mod staticdata;
 
-use crate::categorie::*;
-use crate::products::product::{self, Product};
+use crate::model::product::{self, Product};
 use crate::schema::*;
 use crate::staticdata::StaticData;
 
@@ -20,7 +18,6 @@ use crate::staticdata::StaticData;
 async fn main() {
     env::set_var("RUST_LOG", "warp,graphql-rust-backend");
     env_logger::init();
-    println!("Hello, world!");
 
     let log = warp::log("graphql-rust-backend");
     let schema = Arc::new(schema());

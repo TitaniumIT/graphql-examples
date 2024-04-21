@@ -1,9 +1,11 @@
-use std::{sync::Arc, time::Duration};
 use async_channel::{Receiver, Sender};
+use std::{sync::Arc, time::Duration};
 use tokio::{sync::RwLock, time::sleep};
 
-use crate::{products::{backorder::ProductInBackorder, intransit::ProductInTransit, product::Product}, Category};
-
+use crate::model::{
+    backorder::ProductInBackorder, categorie::Category, intransit::ProductInTransit,
+    product::Product,
+};
 
 pub struct StaticData {
     pub products: Arc<RwLock<Vec<Product>>>,

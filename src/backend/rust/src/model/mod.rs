@@ -7,6 +7,8 @@ use self::{backorder::ProductInBackorder, intransit::ProductInTransit, product::
 pub mod product;
 pub mod intransit;
 pub mod backorder;
+pub mod categorie;
+pub mod productrelay;
 
 #[derive(GraphQLUnion)]
 #[graphql(Context = Context)]

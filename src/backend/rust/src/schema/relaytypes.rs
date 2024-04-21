@@ -11,15 +11,15 @@ pub struct Connection<Node, Cursor> {
 }
 
 impl<Node, Cursor> Connection<Node, Cursor> {
-    pub(crate) fn _edges(&self) -> &[Edge<Node, Cursor>] {
+    pub fn _edges(&self) -> &[Edge<Node, Cursor>] {
         self.edges.as_slice()
     }
 
-    pub(crate) fn _nodes(&self) -> Vec<&Node> {
+    pub fn _nodes(&self) -> Vec<&Node> {
         self.edges.iter().map(|edge| &edge.node).collect()
     }
 
-    pub(crate) fn _page_info(&self) -> PageInfo<'_>
+    pub fn _page_info(&self) -> PageInfo<'_>
     where
         Cursor: AsRef<str>,
     {

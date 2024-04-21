@@ -1,18 +1,13 @@
-use async_channel::{Receiver, Sender};
-use futures::Stream;
 use juniper::{
-    graphql_interface, graphql_object, graphql_subscription, FieldError, GraphQLScalar, RootNode,
+    graphql_object,
 };
-use std::ops::Deref;
-use std::pin::Pin;
-use std::{sync::Arc, time::Duration};
-use tokio::{self, sync::RwLock, time::sleep};
 
+use crate::model::categorie::Category;
+use crate::model::productrelay::{ProductConnection, ProductEdge};
 use crate::Context;
 use crate::{
     product::*,
-    products::{backorder::ProductInBackorder, intransit::ProductInTransit, AllProductTypes},
-    Category,
+    model::AllProductTypes,
 };
 
 pub struct Query;
