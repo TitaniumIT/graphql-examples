@@ -15,8 +15,8 @@ impl Subscriptions {
         context: &'ctx Context,
         customer_id: EmailAddressScalar,
     ) -> ProductsIntransitStream {
-        let (_s,r) = &context.data.status_channel;
-        let receiver= r.clone();
+        let (s,_r) = &context.data.status_channel;
+        let mut receiver= s.subscribe();
         let stream = async_stream::stream! {
             loop {
                 if let Ok(product_changed) = receiver.recv().await {

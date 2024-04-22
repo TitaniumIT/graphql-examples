@@ -1,6 +1,5 @@
-use async_channel::{Receiver, Sender};
 use std::{sync::Arc, time::Duration};
-use tokio::{sync::RwLock, time::sleep};
+use tokio::{sync::{broadcast::{Receiver, Sender}, RwLock}, time::sleep};
 
 use crate::model::{
     backorder::ProductInBackorder, categorie::Category, intransit::ProductInTransit,

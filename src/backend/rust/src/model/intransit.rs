@@ -1,4 +1,4 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use juniper::graphql_object;
 
@@ -6,7 +6,7 @@ use crate::{ scalars::EmailAddressScalar, Context, StaticData};
 
 use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct ProductInTransit {
     product_id: String,
     state: String,
@@ -27,7 +27,7 @@ impl ProductInTransit {
     pub async fn deliver(&mut self,data: Arc<StaticData>)  {
        self.state = "Deliverd".to_string();
        let (s,_r) = &data.status_channel;
-       s.send(self.clone()).await.unwrap();
+       s.send(self.clone()).unwrap();
     }
 
     pub async fn cancel(&mut self,data: Arc<StaticData>)  {
@@ -36,7 +36,7 @@ impl ProductInTransit {
        let product = products.iter_mut().find(|p| p.id() == &self.product_id).unwrap();
        product.restock();
        let (s,_r) = &data.status_channel;
-       s.send(self.clone()).await.unwrap();
+       s.send(self.clone()).unwrap();
     }
 }
 

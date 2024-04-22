@@ -1,8 +1,8 @@
 use std::env;
 use std::sync::Arc;
-use async_channel::unbounded;
 use juniper_graphql_ws::ConnectionConfig;
 use model::categorie::Category;
+use tokio::sync::broadcast;
 use tokio::{self, sync::RwLock};
 use warp::Filter;
 
@@ -45,7 +45,7 @@ async fn main() {
         categories: Arc::new(RwLock::new(static_categorie_list)),
         products_in_transit: Arc::new(RwLock::new(Vec::new())),
         products_in_backorders: Arc::new(RwLock::new(Vec::new())),
-        status_channel: unbounded()
+        status_channel: broadcast::channel(16)
     });
 
     let cors = warp::cors()
