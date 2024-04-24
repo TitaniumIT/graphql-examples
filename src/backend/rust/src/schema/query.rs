@@ -1,6 +1,4 @@
-use juniper::{
-    graphql_object,
-};
+use juniper::graphql_object;
 
 use crate::model::categorie::Category;
 use crate::model::productrelay::{ProductConnection, ProductEdge};
