@@ -3,7 +3,7 @@ use std::{cmp::Ordering, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 use crate::{
-    relaytypes::{Connection, Edge}, scalars::EmailAddressScalar, Context, StaticData
+    scalars::EmailAddressScalar, Context, StaticData
 };
 
 use super::{
@@ -79,7 +79,7 @@ impl Product {
         }
         self.stock -= amount;
 
-        sleep(Duration::from_millis(500)).await;
+        sleep(Duration::from_millis(5000)).await;
 
         if self.stock == 0 {
             let mut backorder = data.products_in_backorders.write().await;

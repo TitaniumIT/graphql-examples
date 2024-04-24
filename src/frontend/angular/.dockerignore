@@ -4,6 +4,8 @@
 /node_modules
 /e2e
 /docs
+/dist
 .gitignore
 *.zip
 *.md
+Dockerfile

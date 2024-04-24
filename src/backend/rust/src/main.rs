@@ -49,7 +49,7 @@ async fn main() {
     });
 
     let cors = warp::cors()
-        .allow_origins(vec!["http://localhost:4200", "http://localhost:7265"])
+        .allow_origins(vec!["http://localhost:4200", "http://localhost:7265" , "http://localhost:8080"])
         .allow_methods(vec!["POST", "OPTIONS"])
         .allow_headers(vec![
             "User-Agent",
@@ -96,5 +96,5 @@ async fn main() {
         .with(log))
     .or(warp::any().map(warp::reply).with(cors.clone()).with(log));
 
-    warp::serve(routes).run(([127, 0, 0, 1], 7265)).await
+    warp::serve(routes).run(([0, 0, 0, 0], 8080)).await
 }
