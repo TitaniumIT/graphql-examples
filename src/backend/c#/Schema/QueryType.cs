@@ -38,7 +38,7 @@ also **markdown** is supported,
 
             Connection<ProductType>()
                 .Name("ProductsRelay")
-                .Bidirectional()
+                .Bidirectional() 
                 .PageSize(5)
                 .ResolveAsync(async ctx =>
                 {
@@ -81,7 +81,6 @@ also **markdown** is supported,
                 });
 
             Field<ListGraphType<CategoryType>, List<Category>>("Categories")
-
                .Resolve(ctx =>
                {
                    return StaticDataSource.Categories;
