@@ -1,15 +1,19 @@
 [package]
 name = "rust-web"
 version = "0.1.0"
-authors = ["Marco Fuijkschot <marcof@titaniumit.nl>"]
+authors = ["Marco Fuykschot <marcof@titaniumit.nl>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 dioxus = { version = "0.5", features = ["web", "router"] }
+cynic = { version = "3", features = ["http-reqwest"] }
 
 # Debug
 log = "0.4.19"
 dioxus-logger = "0.4.1"
 console_error_panic_hook = "0.1.7"
+
+[build-dependencies]
+cynic-codegen = { version = "3" }

@@ -1,0 +1,18 @@
+query getManagerProducts {
+  allProducts {
+    ...AnyProductView
+  }
+}
+
+fragment AnyProductView on AllProductTypes{
+  ... on IProduct {
+      id
+      name
+    }
+  ... on AvailableActionsInterfaceType{
+    actionsAllowed
+  }
+    ... on ProductInTransit {
+      customerId
+  }
+}

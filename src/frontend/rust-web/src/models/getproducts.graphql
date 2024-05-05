@@ -1,0 +1,32 @@
+query getProducts($first:Int,$after: String ,$last:Int,$before: String ) {
+  productsRelay(first:$first,after:$after,last:$last,before:$before) @connection(key: "productsRelay")
+    {
+    edges{
+      node{
+        ...productView
+      }
+    }
+    totalCount
+   pageInfo{
+      ...pageInfoView
+    }
+    items {
+     ...productView
+    }
+  } 
+}
+
+fragment pageInfoView on PageInfo{
+     hasNextPage
+     hasPreviousPage
+     startCursor
+     endCursor
+}
+
+fragment productView on Product{
+  id
+  name
+  description
+  inStock
+  actionsAllowed
+}

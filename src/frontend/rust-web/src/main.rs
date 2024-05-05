@@ -3,6 +3,9 @@
 use dioxus::prelude::*;
 use log::LevelFilter;
 
+#[cynic::schema("example")]
+mod schema {}
+
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
     #[route("/")]
@@ -55,6 +58,7 @@ fn Products() -> Element {
     ];
 
     let loading = false;
+    let mut selected_id = use_signal(||"P3".to_string());
 
     rsx! {
       table {
@@ -70,10 +74,16 @@ fn Products() -> Element {
                 tbody {
                     for product in products {
                         tr {
+                            class: if product.name == *selected_id.read() { "table-active" } else {""},
+                            onclick: move |_| {
+                                *selected_id.write() = product.name.clone();
+                            },
                             td { "{product.name}"}
                             td { "{product.description}"}
                             td { "{product.in_stock}"}
-                            td { }
+                            td { 
+                                
+                            }
                         }
                     }
                 }
@@ -103,7 +113,6 @@ fn Home() -> Element {
             div {
                 class:"card-body",
                 Products {
-
                 }
             }
         }
@@ -129,3 +138,6 @@ fn Home() -> Element {
 //         <app-basket></app-basket>
 //     </div>
 // </div>
+
+
+
