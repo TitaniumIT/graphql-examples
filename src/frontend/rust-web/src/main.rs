@@ -115,7 +115,7 @@ fn Products() -> Element {
     });
 
     let mut selected_id = use_signal(|| "".to_string());
-    let var_name = rsx! {
+    rsx! {
          table {
              class:"table table-sm",
              thead {
@@ -134,7 +134,7 @@ fn Products() -> Element {
                                     tr {
                                             class: if product.id == *selected_id.read() { "table-active" } else {""},
                                                 onclick: move |_| {
-                                                    *selected_id.write() = id.clone(); 
+                                                    *selected_id.write() = id.clone();
                                                     },
                                             td { "{product.name}"}
                                             td { "{product.description}"}
@@ -144,24 +144,23 @@ fn Products() -> Element {
                                 }
                            }) }
                         },
-               Some(Err(_)) => rsx! {
-                       tr {
-                          td {
-                           colspan:"4",
-                           "Error"
-                          }
-                       }
-                },
-               None => rsx! {
-                       tr {
-                          td { colspan:"4","Loading"}
-                       }
-                   }
+                        Some(Err(_)) => rsx! {
+                                tr {
+                                    td {
+                                    colspan:"4",
+                                    "Error"
+                                    }
+                                }
+                            },
+                        None => rsx! {
+                                tr {
+                                    td { colspan:"4","Loading"}
+                                }
+                            }
+                    }
                 }
             }
         }
-    };
-    var_name
 }
 
 #[component]
