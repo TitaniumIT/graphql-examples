@@ -1,5 +1,11 @@
 #![allow(non_snake_case)]
 
+use std::{sync::Arc, thread::Scope};
+
+use cynic::{
+    http::{CynicReqwestError, ReqwestExt},
+    QueryBuilder,
+};
 use dioxus::prelude::*;
 use log::LevelFilter;
 
@@ -26,79 +32,136 @@ fn App() -> Element {
     }
 }
 
-struct Product {
-    name: String,
-    description: String,
-    in_stock: i32,
+#[derive(cynic::QueryVariables, Debug)]
+pub struct GetProductsVariables<'a> {
+    pub after: Option<&'a str>,
+    pub before: Option<&'a str>,
+    pub first: Option<i32>,
+    pub last: Option<i32>,
+}
+
+#[derive(cynic::QueryFragment, Debug)]
+#[cynic(graphql_type = "QueryType", variables = "GetProductsVariables")]
+pub struct GetProducts {
+    #[arguments(first: $first, after: $after, last: $last, before: $before)]
+    pub products_relay: Option<ProductConnection>,
+}
+
+#[derive(cynic::QueryFragment, Debug)]
+pub struct ProductConnection {
+    pub edges: Option<Vec<Option<ProductEdge>>>,
+    pub total_count: Option<i32>,
+    pub page_info: PageInfo,
+    pub items: Option<Vec<Option<Product>>>,
+}
+
+#[derive(cynic::QueryFragment, Debug)]
+pub struct ProductEdge {
+    pub node: Option<Product>,
+}
+
+#[derive(cynic::QueryFragment, Debug)]
+pub struct Product {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub in_stock: i32,
+    pub actions_allowed: Option<Vec<Option<String>>>,
+}
+
+#[derive(cynic::QueryFragment, Debug)]
+pub struct PageInfo {
+    pub has_next_page: bool,
+    pub has_previous_page: bool,
+    pub start_cursor: Option<String>,
+    pub end_cursor: Option<String>,
 }
 
 #[component]
 fn Products() -> Element {
-    let products = vec![
-        Product {
-            name: "P1".to_string(),
-            description: "Desc".to_string(),
-            in_stock: 4,
-        },
-        Product {
-            name: "P2".to_string(),
-            description: "Desc 1".to_string(),
-            in_stock: 4,
-        },
-        Product {
-            name: "P3".to_string(),
-            description: "Desc 2".to_string(),
-            in_stock: 4,
-        },
-        Product {
-            name: "P4".to_string(),
-            description: "Desc 4".to_string(),
-            in_stock: 4,
-        },
-    ];
+    let mut future = use_resource(move || async move {
+        let client = reqwest::Client::new();
+        let query = GetProducts::build(GetProductsVariables {
+            first: Some(5),
+            after: None,
+            before: None,
+            last: None,
+        });
+        let result = client
+            .post("http://localhost:7265/graphql")
+            .run_graphql(query)
+            .await
+            .unwrap();
+        if !result.errors.is_some() {
+            Ok(result
+                .data
+                .and_then(|p| p.products_relay)
+                .and_then(|c| c.edges)
+                .and_then(|e| {
+                    Some(
+                        e.into_iter()
+                            .map(|edge| edge.and_then(|e| e.node))
+                            .map(|p| p.unwrap())
+                            .collect::<Vec<_>>(),
+                    )
+                })
+                .unwrap())
+        } else {
+            Err(CynicReqwestError::ErrorResponse(
+                reqwest::StatusCode::OK,
+                "Failed".to_string(),
+            ))
+        }
+    });
 
-    let loading = false;
-    let mut selected_id = use_signal(||"P3".to_string());
-
-    rsx! {
-      table {
-          class:"table table-sm",
-          thead {
-            class:"table-light",
-            th { scope:"col",  "Name" }
-            th { scope:"col",  "Description" }
-            th { scope:"col",  "In Stock" }
-            th { scope:"col",  "Actions" }
-          }
-          if ! loading {
-                tbody {
-                    for product in products {
-                        tr {
-                            class: if product.name == *selected_id.read() { "table-active" } else {""},
-                            onclick: move |_| {
-                                *selected_id.write() = product.name.clone();
-                            },
-                            td { "{product.name}"}
-                            td { "{product.description}"}
-                            td { "{product.in_stock}"}
-                            td { 
-                                
-                            }
-                        }
-                    }
-                }
-            } else {
-                tbody {
-                    tr {
-                       td {
-                        colspan:"4",
-                        "Loading"
+    let mut selected_id = use_signal(|| "".to_string());
+    let var_name = rsx! {
+         table {
+             class:"table table-sm",
+             thead {
+               class:"table-light",
+               th { scope:"col",  "Name" }
+               th { scope:"col",  "Description" }
+               th { scope:"col",  "In Stock" }
+               th { scope:"col",  "Actions" }
+               }
+               tbody {
+                   match &*future.read_unchecked() {
+                       Some(Ok(products)) => rsx! {
+                            { products.iter().map(|product| {
+                                 let id = product.id.clone();
+                                 rsx!{
+                                    tr {
+                                            class: if product.id == *selected_id.read() { "table-active" } else {""},
+                                                onclick: move |_| {
+                                                    *selected_id.write() = id.clone(); 
+                                                    },
+                                            td { "{product.name}"}
+                                            td { "{product.description}"}
+                                            td { "{product.in_stock}"}
+                                            td {      }
+                                    }
+                                }
+                           }) }
+                        },
+               Some(Err(_)) => rsx! {
+                       tr {
+                          td {
+                           colspan:"4",
+                           "Error"
+                          }
                        }
-                    }
+                },
+               None => rsx! {
+                       tr {
+                          td { colspan:"4","Loading"}
+                       }
+                   }
                 }
             }
-      }
-    }
+        }
+    };
+    var_name
 }
 
 #[component]
@@ -138,6 +201,3 @@ fn Home() -> Element {
 //         <app-basket></app-basket>
 //     </div>
 // </div>
-
-
-

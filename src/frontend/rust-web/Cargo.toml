@@ -9,6 +9,7 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.5", features = ["web", "router"] }
 cynic = { version = "3", features = ["http-reqwest"] }
+reqwest ={ version = "*"}
 
 # Debug
 log = "0.4.19"
