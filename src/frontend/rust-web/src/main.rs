@@ -1,16 +1,14 @@
 #![allow(non_snake_case)]
 
-use std::{sync::Arc, thread::Scope};
+mod schema;
 
 use cynic::{
-    http::{CynicReqwestError, ReqwestExt},
-    QueryBuilder,
-};
+    http::{CynicReqwestError, ReqwestExt}, QueryBuilder};
 use dioxus::prelude::*;
 use log::LevelFilter;
 
-#[cynic::schema("example")]
-mod schema {}
+use crate::schema::{GetProducts, GetProductsVariables};
+
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -32,53 +30,10 @@ fn App() -> Element {
     }
 }
 
-#[derive(cynic::QueryVariables, Debug)]
-pub struct GetProductsVariables<'a> {
-    pub after: Option<&'a str>,
-    pub before: Option<&'a str>,
-    pub first: Option<i32>,
-    pub last: Option<i32>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-#[cynic(graphql_type = "QueryType", variables = "GetProductsVariables")]
-pub struct GetProducts {
-    #[arguments(first: $first, after: $after, last: $last, before: $before)]
-    pub products_relay: Option<ProductConnection>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct ProductConnection {
-    pub edges: Option<Vec<Option<ProductEdge>>>,
-    pub total_count: Option<i32>,
-    pub page_info: PageInfo,
-    pub items: Option<Vec<Option<Product>>>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct ProductEdge {
-    pub node: Option<Product>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct Product {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub in_stock: i32,
-    pub actions_allowed: Option<Vec<Option<String>>>,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-pub struct PageInfo {
-    pub has_next_page: bool,
-    pub has_previous_page: bool,
-    pub start_cursor: Option<String>,
-    pub end_cursor: Option<String>,
-}
 
 #[component]
-fn Products() -> Element {
+fn Products(selected_id: Signal<String>) -> Element {
+
     let mut future = use_resource(move || async move {
         let client = reqwest::Client::new();
         let query = GetProducts::build(GetProductsVariables {
@@ -114,7 +69,7 @@ fn Products() -> Element {
         }
     });
 
-    let mut selected_id = use_signal(|| "".to_string());
+
     rsx! {
          table {
              class:"table table-sm",
@@ -132,6 +87,7 @@ fn Products() -> Element {
                                  let id = product.id.clone();
                                  rsx!{
                                     tr {
+                                            key: "{product.id}",
                                             class: if product.id == *selected_id.read() { "table-active" } else {""},
                                                 onclick: move |_| {
                                                     *selected_id.write() = id.clone();
@@ -165,6 +121,9 @@ fn Products() -> Element {
 
 #[component]
 fn Home() -> Element {
+
+    let mut selected_id = use_signal(|| "".to_string());
+
     rsx! {
         div {
             class:"card",
@@ -175,11 +134,55 @@ fn Home() -> Element {
             div {
                 class:"card-body",
                 Products {
+                    selected_id: selected_id
+                }
+            }
+        }
+        div {
+            class:"card",
+            h5 {
+                class:" card-header",
+                "Product details"
+            }
+            div {
+                class:"card-body",
+                Product {
+                    selected_id: selected_id
                 }
             }
         }
     }
 }
+
+#[component]
+fn Product(selected_id:Signal<String>) -> Element{
+
+    if *selected_id.read() != "" {
+        rsx!{
+            div {
+              class: "mb-3",
+              label {
+                r#for:"name",
+                class: "form-label",
+                "Product name"
+              },
+              input {
+                class:"form-control",
+                readonly:true,
+                id:"name",
+                value: "{selected_id}"
+              }
+            }
+        }
+    } else {
+        rsx! {
+            div {
+                "No product selected"
+            }
+        }
+    }
+}
+
 
 // <div class="card">
 //     <h5 class="card-header">Shop</h5>
