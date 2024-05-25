@@ -1,0 +1,22 @@
+[application]
+name = "rust-web"
+default_platform = "web"
+out_dir = "dist"
+asset_dir = "assets"
+
+[web.app]
+title = "Graphql rust ui"
+
+[web.watcher]
+reload_html = true
+watch_path = ["src", "assets"]
+
+[web.resource]
+style = [
+  "./css/bootstrap.min.css",
+]
+script = [
+  "./js/bootstrap.bundle.min.js"
+]
+
+[web.resource.dev]
