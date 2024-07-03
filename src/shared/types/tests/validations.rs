@@ -1,6 +1,6 @@
 use cucumber::{given, when,then, World};
 
-use shared_types::{self, shared_types::EmailAddress};
+use shared_types::{self, EmailAddress};
 
 #[given(expr="Email {word}")]
 fn email(world: &mut EmailWorld, emailaddress:String) {
