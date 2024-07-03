@@ -3,12 +3,13 @@
 mod schema;
 
 use cynic::{
-    http::{CynicReqwestError, ReqwestExt}, QueryBuilder};
+    http::{CynicReqwestError, ReqwestExt},
+    QueryBuilder,
+};
 use dioxus::prelude::*;
 use log::LevelFilter;
 
 use crate::schema::{GetProducts, GetProductsVariables};
-
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -30,10 +31,8 @@ fn App() -> Element {
     }
 }
 
-
 #[component]
 fn Products(selected_id: Signal<String>) -> Element {
-
     let mut future = use_resource(move || async move {
         let client = reqwest::Client::new();
         let query = GetProducts::build(GetProductsVariables {
@@ -69,59 +68,57 @@ fn Products(selected_id: Signal<String>) -> Element {
         }
     });
 
-
     rsx! {
-         table {
-             class:"table table-sm",
-             thead {
-               class:"table-light",
-               th { scope:"col",  "Name" }
-               th { scope:"col",  "Description" }
-               th { scope:"col",  "In Stock" }
-               th { scope:"col",  "Actions" }
-               }
-               tbody {
-                   match &*future.read_unchecked() {
-                       Some(Ok(products)) => rsx! {
-                            { products.iter().map(|product| {
-                                 let id = product.id.clone();
-                                 rsx!{
-                                    tr {
-                                            key: "{product.id}",
-                                            class: if product.id == *selected_id.read() { "table-active" } else {""},
-                                                onclick: move |_| {
-                                                    *selected_id.write() = id.clone();
-                                                    },
-                                            td { "{product.name}"}
-                                            td { "{product.description}"}
-                                            td { "{product.in_stock}"}
-                                            td {      }
-                                    }
-                                }
-                           }) }
-                        },
-                        Some(Err(_)) => rsx! {
+     table {
+         class:"table table-sm",
+         thead {
+           class:"table-light",
+           th { scope:"col",  "Name" }
+           th { scope:"col",  "Description" }
+           th { scope:"col",  "In Stock" }
+           th { scope:"col",  "Actions" }
+           }
+           tbody {
+               match &*future.read_unchecked() {
+                   Some(Ok(products)) => rsx! {
+                        { products.iter().map(|product| {
+                             let id = product.id.clone();
+                             rsx!{
                                 tr {
-                                    td {
-                                    colspan:"4",
-                                    "Error"
-                                    }
-                                }
-                            },
-                        None => rsx! {
-                                tr {
-                                    td { colspan:"4","Loading"}
+                                        key: "{product.id}",
+                                        class: if product.id == *selected_id.read() { "table-active" } else {""},
+                                            onclick: move |_| {
+                                                *selected_id.write() = id.clone();
+                                                },
+                                        td { "{product.name}"}
+                                        td { "{product.description}"}
+                                        td { "{product.in_stock}"}
+                                        td {      }
                                 }
                             }
-                    }
+                       }) }
+                    },
+                    Some(Err(_)) => rsx! {
+                            tr {
+                                td {
+                                colspan:"4",
+                                "Error"
+                                }
+                            }
+                        },
+                    None => rsx! {
+                            tr {
+                                td { colspan:"4","Loading"}
+                            }
+                        }
                 }
             }
         }
+    }
 }
 
 #[component]
 fn Home() -> Element {
-
     let mut selected_id = use_signal(|| "".to_string());
 
     rsx! {
@@ -155,10 +152,9 @@ fn Home() -> Element {
 }
 
 #[component]
-fn Product(selected_id:Signal<String>) -> Element{
-
+fn Product(selected_id: Signal<String>) -> Element {
     if *selected_id.read() != "" {
-        rsx!{
+        rsx! {
             div {
               class: "mb-3",
               label {
@@ -182,7 +178,6 @@ fn Product(selected_id:Signal<String>) -> Element{
         }
     }
 }
-
 
 // <div class="card">
 //     <h5 class="card-header">Shop</h5>
