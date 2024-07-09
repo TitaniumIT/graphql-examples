@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-#[derive(Debug)]
+#[derive(Debug,Clone,PartialEq)]
 pub struct EmailAddress(String);
 
 static VALIDATOR: Lazy<Regex> =

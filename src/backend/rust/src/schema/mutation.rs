@@ -1,6 +1,6 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::{model::intransit::ProductInTransit, scalars::EmailAddressScalar, Context, Product};
+use crate::{model::{intransit::ProductInTransit, product::Product}, scalars::EmailAddressScalar, Context};
 
 pub struct Mutation;
 
