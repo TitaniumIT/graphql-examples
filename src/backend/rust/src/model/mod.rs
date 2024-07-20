@@ -3,6 +3,7 @@ use juniper::{graphql_interface, GraphQLUnion};
 use crate::Context;
 
 use self::{backorder::ProductInBackorder, intransit::ProductInTransit, product::Product};
+use crate::scalars::DefaultScalarValue;
 
 pub mod product;
 pub mod intransit;
@@ -11,7 +12,7 @@ pub mod categorie;
 pub mod productrelay;
 
 #[derive(GraphQLUnion)]
-#[graphql(Context = Context)]
+#[graphql(context = Context,scalar=DefaultScalarValue)]
 pub enum AllProductTypes {
     Product(Product),
     ProductInBackorder(ProductInBackorder),
@@ -19,7 +20,7 @@ pub enum AllProductTypes {
 }
 
 #[graphql_interface(for = [Product, ProductInTransit , ProductInBackorder])]
-#[graphql(Context = Context)]
+#[graphql(context = Context,scalar=DefaultScalarValue)]
 pub trait IProduct {
     fn id(&self) -> &String;
     fn name(&self) -> &String;
@@ -27,7 +28,7 @@ pub trait IProduct {
 }
 
 #[graphql_interface(for = [Product, ProductInTransit , ProductInBackorder])]
-#[graphql(Context = Context)]
+#[graphql(context = Context,scalar=DefaultScalarValue)]
 pub trait AvailableActionsInterfaceType {
     fn actions_allowed() -> Vec<String>;
 }

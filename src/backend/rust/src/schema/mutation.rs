@@ -1,10 +1,10 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::{model::{intransit::ProductInTransit, product::Product}, scalars::EmailAddressScalar, Context};
+use crate::{model::{intransit::ProductInTransit, product::Product}, scalars::{DefaultScalarValue, EmailAddressScalar}, Context};
 
 pub struct Mutation;
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 impl Mutation {
     pub async fn buy<'ctx>(
         context: &'ctx Context,

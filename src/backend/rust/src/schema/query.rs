@@ -2,6 +2,7 @@ use juniper::graphql_object;
 
 use crate::model::categorie::Category;
 use crate::model::productrelay::{ProductConnection, ProductEdge};
+use crate::scalars::DefaultScalarValue;
 use crate::Context;
 use crate::{
     product::*,
@@ -10,7 +11,7 @@ use crate::{
 
 pub struct Query;
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 impl Query {
     pub async fn products<'ctx>(context: &'ctx Context) -> Vec<Product> {
         let products = context.data.products.read().await;

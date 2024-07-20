@@ -1,13 +1,13 @@
 use juniper::graphql_object;
 
-use crate::{relaytypes::{Connection, Edge, PageInfo}, Context};
+use crate::{relaytypes::{Connection, Edge, PageInfo}, scalars::DefaultScalarValue, Context};
 
 use super::product::Product;
 
 
 pub type ProductConnection = Connection<Product, String>;
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 impl ProductConnection {
     pub fn edges(&self) -> &[ProductEdge] {
         self._edges()
@@ -32,7 +32,7 @@ impl ProductConnection {
 
 pub type ProductEdge = Edge<Product, String>;
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 impl ProductEdge {
     pub fn node(&self) -> &Product {
         &self.node

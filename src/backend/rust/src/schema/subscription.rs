@@ -3,13 +3,13 @@ use std::pin::Pin;
 use futures::Stream;
 use juniper::{graphql_subscription, FieldError};
 
-use crate::{model::intransit::ProductInTransit, scalars::EmailAddressScalar, Context};
+use crate::{model::intransit::ProductInTransit, scalars::{DefaultScalarValue, EmailAddressScalar}, Context};
 pub struct Subscriptions;
 
 type ProductsIntransitStream =
     Pin<Box<dyn Stream<Item = Result<ProductInTransit, FieldError>> + Send>>;
 
-#[graphql_subscription(context = Context)]
+#[graphql_subscription(context = Context,scalar=DefaultScalarValue)]
 impl Subscriptions {
     pub async fn status_changed<'ctx>(
         context: &'ctx Context,

@@ -1,4 +1,4 @@
-use crate::Context;
+use crate::{scalars::DefaultScalarValue, Context};
 use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 use juniper::graphql_object;
 
@@ -17,7 +17,7 @@ impl ProductInBackorder {
     }
 }
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 #[graphql(impl = IProductValue)]
 #[graphql(impl = AvailableActionsInterfaceTypeValue)]
 impl ProductInBackorder {
