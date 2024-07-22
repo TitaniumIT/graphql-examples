@@ -32,27 +32,32 @@ impl<'de> Deserialize<'de> for DefaultScalarValue {
                 Ok(DefaultScalarValue::Boolean(b))
             }
 
-            fn visit_i32<E: de::Error>(self, n: i32) -> Result<Self::Value, E> {
-                Ok(DefaultScalarValue::Int(n))
-            }
-
-            fn visit_u32<E: de::Error>(self, n: u32) -> Result<Self::Value, E> {
-                if n <= i32::MAX as u32 {
-                    self.visit_i32(n.try_into().unwrap())
+            fn visit_i64<E: de::Error>(self, n: i64) -> Result<Self::Value, E> {
+                if n >= i64::from(i32::MIN) && n <= i64::from(i32::MAX) {
+                    Ok(DefaultScalarValue::Int(n.try_into().unwrap()))
                 } else {
-                    self.visit_u64(n.into())
+                    // Browser's `JSON.stringify()` serializes all numbers
+                    // having no fractional part as integers (no decimal point),
+                    // so we must parse large integers as floating point,
+                    // otherwise we would error on transferring large floating
+                    // point numbers.
+                    // TODO: Use `FloatToInt` conversion once stabilized:
+                    //       https://github.com/rust-lang/rust/issues/67057
+                    Ok(DefaultScalarValue::Float(n as f64))
                 }
             }
 
             fn visit_u64<E: de::Error>(self, n: u64) -> Result<Self::Value, E> {
-                if n <= i64::MAX as u64 {
+                if n <= u64::try_from(i32::MAX).unwrap() {
                     self.visit_i64(n.try_into().unwrap())
                 } else {
-                    // Browser's `JSON.stringify()` serialize all numbers
-                    // having no fractional part as integers (no decimal
-                    // point), so we must parse large integers as floating
-                    // point, otherwise we would error on transferring large
-                    // floating point numbers.
+                    // Browser's `JSON.stringify()` serializes all numbers
+                    // having no fractional part as integers (no decimal point),
+                    // so we must parse large integers as floating point,
+                    // otherwise we would error on transferring large floating
+                    // point numbers.
+                    // TODO: Use `FloatToInt` conversion once stabilized:
+                    //       https://github.com/rust-lang/rust/issues/67057
                     Ok(DefaultScalarValue::Float(n as f64))
                 }
             }

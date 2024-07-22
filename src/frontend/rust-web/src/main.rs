@@ -1,15 +1,8 @@
 #![allow(non_snake_case)]
 
-mod schema;
-
-use cynic::{
-    http::{CynicReqwestError, ReqwestExt},
-    QueryBuilder,
-};
 use dioxus::prelude::*;
-use log::LevelFilter;
 
-use crate::schema::{GetProducts, GetProductsVariables};
+use log::LevelFilter;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -25,46 +18,49 @@ fn main() {
     launch(App);
 }
 
+#[derive(Clone, Copy)]
+struct LoadedCategories(bool);
+
+
 fn App() -> Element {
+    use_context_provider(|| Signal::new(LoadedCategories(false)));
     rsx! {
         Router::<Route> {}
     }
 }
 
+use get_products::productView;
+
 #[component]
 fn Products(selected_id: Signal<String>) -> Element {
-    let mut future = use_resource(move || async move {
+    let mut future: Resource<Result<Vec<productView>, String>> = use_resource(move || async move {
         let client = reqwest::Client::new();
-        let query = GetProducts::build(GetProductsVariables {
+
+        let variables = get_products::Variables {
             first: Some(5),
             after: None,
             before: None,
             last: None,
-        });
-        let result = client
-            .post("http://localhost:7265/graphql")
-            .run_graphql(query)
-            .await
-            .unwrap();
+        };
+
+        let result =
+            post_graphql::<GetProducts, _>(&client, "http://localhost:7265/graphql", variables)
+                .await
+                .unwrap();
+
         if !result.errors.is_some() {
             Ok(result
                 .data
-                .and_then(|p| p.products_relay)
-                .and_then(|c| c.edges)
-                .and_then(|e| {
-                    Some(
-                        e.into_iter()
-                            .map(|edge| edge.and_then(|e| e.node))
-                            .map(|p| p.unwrap())
-                            .collect::<Vec<_>>(),
+                .and_then(|p| 
+                    Some(p.products_relay
+                        .edges
+                        .into_iter()
+                        .map(|edge| edge.node)
+                        .collect())
                     )
-                })
                 .unwrap())
         } else {
-            Err(CynicReqwestError::ErrorResponse(
-                reqwest::StatusCode::OK,
-                "Failed".to_string(),
-            ))
+            Err("Failed".to_string())
         }
     });
 
@@ -153,6 +149,36 @@ fn Home() -> Element {
 
 #[component]
 fn Product(selected_id: Signal<String>) -> Element {
+    let mut loaded = use_context::<Signal<LoadedCategories>>();
+
+    let mut future: Resource<Result<get_product::>, String>> = use_resource(move || async move {
+        let client = reqwest::Client::new();
+
+        let variables = get_product::Variables {
+           
+        };
+
+        let result =
+            post_graphql::<GetProducts, _>(&client, "http://localhost:7265/graphql", variables)
+                .await
+                .unwrap();
+
+        if !result.errors.is_some() {
+            Ok(result
+                .data
+                .and_then(|p| 
+                    Some(p.products_relay
+                        .edges
+                        .into_iter()
+                        .map(|edge| edge.node)
+                        .collect())
+                    )
+                .unwrap())
+        } else {
+            Err("Failed".to_string())
+        }
+    });
+
     if *selected_id.read() != "" {
         rsx! {
             div {
@@ -198,3 +224,21 @@ fn Product(selected_id: Signal<String>) -> Element {
 //         <app-basket></app-basket>
 //     </div>
 // </div>
+
+use graphql_client::{reqwest::post_graphql, Error, GraphQLQuery};
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/schema.graphqls",
+    query_path = "src/models/getproducts.graphql",
+    normalization = "rust"
+)]
+pub struct GetProducts;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/schema.graphqls",
+    query_path = "src/models/getproduct.graphql",
+    normalization = "rust"
+)]
+pub struct GetProduct;

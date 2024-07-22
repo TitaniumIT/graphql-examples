@@ -1,18 +1,18 @@
 query getProduct($productId:String!,$loadCategories:Boolean!) {
   product(productId:$productId){
-    ...ProductDetailView
+    ...productDetailView
     }
     categories @include(if: $loadCategories){
-     ...CategoryView
+     ...categoryView
     }
 }
 
-fragment CategoryView on Category{
+fragment categoryView on Category{
     id
     name
 }
 
-fragment ProductDetailView on Product{
+fragment productDetailView on Product{
     id
     name
     description
@@ -22,3 +22,4 @@ fragment ProductDetailView on Product{
         id
       }
     }
+

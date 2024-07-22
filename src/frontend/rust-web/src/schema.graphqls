@@ -1,71 +1,12 @@
 schema {
-  query: QueryType
-  mutation: MutationType
-  subscription: SubscriptionType
+  query: Query
+  mutation: Mutation
+  subscription: Subscriptions
 }
 
-# # Query entrypoint
-# also **markdown** is supported,
-# ## Links
-# * for markdown see [Markdown Guide](https://www.markdownguide.org)
-# * Created by [Titanium IT](https://www.titaniumit.nl)
-type QueryType {
-  # All products without paging
-  products: [Product]
-    @deprecated(reason: "Use Skip and Take or the relay version")
-  productsSkipTake(skip: Int = 0, take: Int = 5): [Product]
-  productsRelay(
-    # Only return edges after the specified cursor.
-    after: String
-
-    # Specifies the maximum number of edges to return, starting after the cursor specified by 'after', or the first number of edges if 'after' is not specified.
-    first: Int
-
-    # Only return edges prior to the specified cursor.
-    before: String
-
-    # Specifies the maximum number of edges to return, starting prior to the cursor specified by 'before', or the last number of edges if 'before' is not specified.
-    last: Int
-  ): ProductConnection
-  product(productId: String!): Product
-  categories: [Category]
-  allProducts: [AllProductTypes]
-  productContext: ProductContextType
+interface AvailableActionsInterfaceType {
+  actionsAllowed: [String!]!
 }
-
-type Product implements IProduct & AvailableActionsInterfaceType {
-  id: String!
-  name: String!
-  description: String!
-  inStock: Int!
-  isAllowedToBuy: Boolean!
-  actionsAllowed: [String]
-  categories: [Category]
-
-  # If only id,__typename field is requested , no backend call for categories made
-  categoriesWithoutBatchAsync: [Category]
-
-  # If only id,__typename field is requested , no backend call for categories made
-  categoriesWithoutBatchSync: [Category]
-  productsInTransit(customerId: EmailAddressScalar!): [ProductInTransit]
-}
-
-type Category {
-  id: String!
-  name: String!
-}
-
-type ProductInTransit implements IProduct & AvailableActionsInterfaceType {
-  id: String!
-  productId: String!
-  name: String!
-  description: String!
-  state: String!
-  customerId: EmailAddressScalar
-  actionsAllowed: [String]
-}
-
-scalar EmailAddressScalar
 
 interface IProduct {
   id: String!
@@ -73,77 +14,83 @@ interface IProduct {
   description: String!
 }
 
-interface AvailableActionsInterfaceType {
-  actionsAllowed: [String]
-}
+scalar EmailAddressScalar
 
-# A connection from an object to a list of objects of type `Product`.
-type ProductConnection {
-  # A count of the total number of objects in this connection, ignoring pagination. This allows a client to fetch the first five objects by passing "5" as the argument to `first`, then fetch the total count so it could display "5 of 83", for example. In cases where we employ infinite scrolling or don't have an exact count of entries, this field will return `null`.
-  totalCount: Int
-
-  # Information to aid in pagination.
-  pageInfo: PageInfo!
-
-  # A list of all of the edges returned in the connection.
-  edges: [ProductEdge]
-
-  # A list of all of the objects returned in the connection. This is a convenience field provided for quickly exploring the API; rather than querying for "{ edges { node } }" when no edge data is needed, this field can be used instead. Note that when clients like Relay need to fetch the "cursor" field on the edge to enable efficient pagination, this shortcut cannot be used, and the full "{ edges { node } } " version should be used instead.
-  items: [Product]
-}
-
-# Information about pagination in a connection.
-type PageInfo {
-  # When paginating forwards, are there more items?
-  hasNextPage: Boolean!
-
-  # When paginating backwards, are there more items?
-  hasPreviousPage: Boolean!
-
-  # When paginating backwards, the cursor to continue.
-  startCursor: String
-
-  # When paginating forwards, the cursor to continue.
-  endCursor: String
-}
-
-# An edge in a connection from an object to another object of type `Product`.
-type ProductEdge {
-  # A cursor for use in pagination
-  cursor: String!
-
-  # The item at the end of the edge
-  node: Product
-}
-
-union AllProductTypes = Product | ProductInTransit | ProductInBackorder
-
-type ProductInBackorder implements IProduct & AvailableActionsInterfaceType {
+type Category {
   id: String!
-  productId: String!
+  name: String!
+}
+
+type Mutation {
+  buy(productId: String!, customerId: EmailAddressScalar!, amount: Int): Product
+  deliver(productInTransitId: String!): ProductInTransit!
+  cancel(productInTransitId: String!): ProductInTransit!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  startCursor: String
+  hasPreviousPage: Boolean!
+}
+
+type Product implements AvailableActionsInterfaceType & IProduct {
+  id: String!
   name: String!
   description: String!
-  actionsAllowed: [String]
+  inStock: Int!
+  actionsAllowed: [String!]!
+  categoriesWithoutBatchAsync: [Category!]!
+  productsInTransit(customerId: EmailAddressScalar!): [ProductInTransit!]!
 }
 
-# Group possiblity, to group queries or mutations
-type ProductContextType {
-  productGetV2(productId: String): Product
+type ProductConnection {
+  edges: [ProductEdge!]!
+  items: [Product!]!
+  totalCount: Int!
+  nodes: [Product!]!
+  pageInfo: PageInfo!
 }
 
-type MutationType {
-  buy(
-    productId: String!
-    customerId: EmailAddressScalar!
-
-    # Defaults to 1
-    amount: Int
-  ): Product
-  deliver(productInTransitId: String!): ProductInTransit
-  cancel(productInTransitId: String!): ProductInTransit
-  restock(productId: String!): ProductInBackorder
+type ProductEdge {
+  node: Product!
+  cursor: String!
 }
 
-type SubscriptionType {
-  statusChanged(customerId: EmailAddressScalar): ProductInTransit
+type ProductInBackorder implements AvailableActionsInterfaceType & IProduct {
+  productId: String!
+  id: String!
+  name: String!
+  description: String!
+  actionsAllowed: [String!]!
 }
+
+type ProductInTransit implements AvailableActionsInterfaceType & IProduct {
+  state: String!
+  productId: String!
+  id: String!
+  name: String!
+  description: String!
+  customerId: EmailAddressScalar!
+  actionsAllowed: [String!]!
+}
+
+type Query {
+  products: [Product!]!
+  productsSkipTake(skip: Int! = 0, take: Int! = 5): [Product!]!
+  productsRelay(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): ProductConnection!
+  product(productId: String!): Product
+  allProducts: [AllProductTypes!]!
+  categories: [Category!]!
+}
+
+type Subscriptions {
+  statusChanged(customerId: EmailAddressScalar!): ProductInTransit!
+}
+
+union AllProductTypes = Product | ProductInBackorder | ProductInTransit
