@@ -1,7 +1,7 @@
 {
    "rust-analyzer.linkedProjects": [
-     "src\\backend\\rust\\Cargo.toml",
-     "src\\frontend\\rust-web\\Cargo.toml",
-     "src\\shared\\types\\Cargo.toml"
+     "${workspaceFolder}\\src\\backend\\rust\\Cargo.toml",
+     "${workspaceFolder}\\src\\frontend\\rust-web\\Cargo.toml",
+     "${workspaceFolder}\\src\\shared\\types\\Cargo.toml"
   ],
 }

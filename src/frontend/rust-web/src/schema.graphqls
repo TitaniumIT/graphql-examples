@@ -86,7 +86,7 @@ type Query {
   ): ProductConnection!
   product(productId: String!): Product
   allProducts: [AllProductTypes!]!
-  categories: [Category!]!
+  categories: [Category!]
 }
 
 type Subscriptions {

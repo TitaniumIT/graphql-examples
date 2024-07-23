@@ -115,7 +115,7 @@ impl Query {
             .collect()
     }
 
-    pub async fn categories<'ctx>(context: &'ctx Context) -> Vec<Category> {
-        context.data.categories().await
+    pub async fn categories<'ctx>(context: &'ctx Context) -> Option<Vec<Category>> {
+       Some(context.data.categories().await)
     }
 }
