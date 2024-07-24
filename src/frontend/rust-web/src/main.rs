@@ -22,11 +22,11 @@ fn main() {
 #[derive(Clone)]
 struct LoadedCategories(Option<Vec<get_product::categoryView>>);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug  ,PartialEq)]
 enum CustomerId {
     ValidEmail(EmailAddress),
     Invalid(String),
-    Default(),
+    Default,
 }
 
 impl Display for CustomerId {
@@ -34,14 +34,14 @@ impl Display for CustomerId {
         match self {
             Self::ValidEmail(address) => f.write_str(&address.to_string()),
             Self::Invalid(data) => f.write_str(data),
-            Self::Default() => f.write_str("Type ypour email"),
+            Self::Default => f.write_str("Type ypour email"),
         }
     }
 }
 
 fn App() -> Element {
     use_context_provider(|| Signal::new(LoadedCategories(None)));
-    use_context_provider(|| Signal::new(CustomerId::Default()));
+    use_context_provider(|| Signal::new(CustomerId::Default));
     rsx! {
         Router::<Route> {}
     }
@@ -330,13 +330,9 @@ fn Basket() -> Element {
                     }
                 }
             },
-            if let CustomerId::Invalid(value) = customer_id.read() {
-                {
-                   rsx!{ span {
-                    "Invalid email {value}"
-                    }
-                    }
-                }
+            div {
+                class: if let CustomerId::Invalid(_) = *customer_id.read() { "visible"} else { "invisible"},
+                "Invalid email {customer_id}"
             }
         }
         table {
@@ -377,9 +373,8 @@ fn Basket() -> Element {
     // </table>
 }
 
-use graphql_client::{reqwest::post_graphql, Error, GraphQLQuery};
+use graphql_client::{reqwest::post_graphql, GraphQLQuery};
 use shared_types::EmailAddress;
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/schema.graphqls",
