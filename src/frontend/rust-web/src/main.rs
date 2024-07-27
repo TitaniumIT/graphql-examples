@@ -1,9 +1,10 @@
 #![allow(non_snake_case)]
-use std::fmt::Display;
-
 use dioxus::prelude::*;
-
+use graphql_client::reqwest::post_graphql;
 use log::LevelFilter;
+use std::{fmt::Display, sync::Arc};
+
+mod models;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -22,7 +23,7 @@ fn main() {
 #[derive(Clone)]
 struct LoadedCategories(Option<Vec<get_product::categoryView>>);
 
-#[derive(Clone, Debug  ,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 enum CustomerId {
     ValidEmail(EmailAddress),
     Invalid(String),
@@ -47,10 +48,18 @@ fn App() -> Element {
     }
 }
 
-use get_products::productView;
+use models::{
+    buy_product::{self, BuyProductBuy},
+    get_product,
+    get_products::{self, productView},
+    BuyProduct, GetProduct, GetProducts,
+};
+use shared_types::EmailAddress;
 
 #[component]
 fn Products(selected_id: Signal<String>) -> Element {
+    let customer_id = use_context::<Signal<CustomerId>>();
+
     let mut future: Resource<Result<Vec<productView>, String>> = use_resource(move || async move {
         let client = reqwest::Client::new();
 
@@ -84,6 +93,26 @@ fn Products(selected_id: Signal<String>) -> Element {
         }
     });
 
+    let Buy = move |product_id: String, customer_id: CustomerId| {
+        spawn(async move {
+            let client = reqwest::Client::new();
+            let CustomerId::ValidEmail(customer_id) = customer_id else {
+                panic!("should not happen")
+            };
+            let variables = buy_product::Variables {
+                product_id,
+                customer_id,
+            };
+
+            let result =
+                post_graphql::<BuyProduct, _>(&client, "http://localhost:7265/graphql", variables)
+                    .await
+                    .unwrap();
+
+            future.restart();
+        });
+    };
+
     rsx! {
      table {
          class:"table table-sm",
@@ -98,18 +127,35 @@ fn Products(selected_id: Signal<String>) -> Element {
                match &*future.read_unchecked() {
                    Some(Ok(products)) => rsx! {
                         { products.iter().map(|product| {
-                             let id = product.id.clone();
-                             rsx!{
+                            let product_id =product.id.clone();
+                            let product_id2 =product.id.clone();
+                            rsx!{
                                 tr {
                                         key: "{product.id}",
                                         class: if product.id == *selected_id.read() { "table-active" } else {""},
                                             onclick: move |_| {
-                                                *selected_id.write() = id.clone();
+                                                *selected_id.write() = product_id2.clone();
                                                 },
                                         td { "{product.name}"}
                                         td { "{product.description}"}
                                         td { "{product.in_stock}"}
-                                        td {      }
+                                        td {
+                                            if let CustomerId::ValidEmail(_)=*customer_id.read()  {
+                                                if  product.canBuy() {
+                                                button {
+                                                    r#type: "button",
+                                                    class: "btn btn-primary",
+                                                    onclick: move |_| {
+                                                        Buy(product_id.clone(),customer_id.read().clone())
+                                                    } ,
+                                                    "Buy"
+                                                }
+                                             }
+                                            }
+                                        // <div *ngIf="product.actionsAllowed?.includes('Processing')" class="spinner-border spinner-border-sm" role="status">
+                                        //     <span class="visually-hidden">Processing...</span>
+                                        // </div>
+                                           }
                                 }
                             }
                        }) }
@@ -316,7 +362,7 @@ fn Basket() -> Element {
     rsx! (
         div{
             input {
-                class:"form-control",
+                class: format!("form-control {}" , if let CustomerId::Invalid(_) = *customer_id.read() { "is-invalid"} else { "is-valid"}),
                 id:"customerid",
                 value:"{customer_id}",
                 required:true,
@@ -331,7 +377,7 @@ fn Basket() -> Element {
                 }
             },
             div {
-                class: if let CustomerId::Invalid(_) = *customer_id.read() { "visible"} else { "invisible"},
+                class: "invalid-feedback",
                 "Invalid email {customer_id}"
             }
         }
@@ -352,16 +398,7 @@ fn Basket() -> Element {
             }
         }
     )
-    //     <table class="table">
-    //     <caption>customer:{{customerId}}</caption>
-    //     <thead>
-    //         <th scope="col">Name</th>
-    //         <th scope="col">ordered</th>
-    //         <th scope="col">intansit</th>
-    //         <th scope="col">deliverd</th>
-    //         <th scope="col">cancelled</th>
-    //     </thead>
-    //     <tbody>
+
     //             <tr *ngFor="let product of inBasket" scope="row" >
     //                 <td>{{product.name}}</td>
     //                 <td>{{product.nrOrderd}}</td>
@@ -371,29 +408,4 @@ fn Basket() -> Element {
     //             </tr>
     //     </tbody>
     // </table>
-}
-
-use graphql_client::{reqwest::post_graphql, GraphQLQuery};
-use shared_types::EmailAddress;
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "src/schema.graphqls",
-    query_path = "src/models/getproducts.graphql",
-    normalization = "rust"
-)]
-pub struct GetProducts;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "src/schema.graphqls",
-    query_path = "src/models/getproduct.graphql",
-    normalization = "rust",
-    response_derives = "Debug,Clone"
-)]
-pub struct GetProduct;
-
-impl get_product::productDetailView {
-    pub fn hasCategory(&self, category: &get_product::categoryView) -> bool {
-        self.selected_categories.iter().any(|c| c.id == category.id)
-    }
 }
