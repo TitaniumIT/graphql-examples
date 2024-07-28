@@ -10,8 +10,12 @@ fragment buyProductView on Product{
     actionsAllowed
     name
     inTransit: productsInTransit(customerId:$customerId){
+        ...productsInTransit
+    }
+}
+
+fragment productsInTransit on ProductInTransit {
       id
       productId
       state
-    }
 }

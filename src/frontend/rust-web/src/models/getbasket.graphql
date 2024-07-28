@@ -1,0 +1,16 @@
+query getBasketProducts($customerId:EmailAddressScalar!) {
+  inBasketProducts: productsRelay{
+    items{
+   ...BasketView
+    }
+} }
+
+fragment BasketView on Product{
+    id
+    name
+    inTransit:productsInTransit(customerId:$customerId){
+        id
+        productId
+        state
+    }
+}

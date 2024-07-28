@@ -55,6 +55,11 @@ struct ProductsCache {
     pub current_products: Vec<Signal<productView>>,
 }
 
+// #[derive(Default, Clone)]
+// struct ProductsInTransitCache {
+//     pub intransit: Vec<Signal<>>,
+// }
+
 fn App() -> Element {
     use_context_provider(|| Signal::new(LoadedCategories(None)));
     use_context_provider(|| Signal::new(CustomerId::Default));
