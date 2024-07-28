@@ -1,9 +1,19 @@
 #![allow(non_snake_case)]
+use controls::bootstrap::Card;
 use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::LevelFilter;
-use std::{fmt::Display, sync::Arc};
+use std::fmt::Display;
 
+use models::{
+    buy_product::{self},
+    get_product,
+    get_products::{self, productView},
+    BuyProduct, GetProduct, GetProducts,
+};
+use shared_types::EmailAddress;
+
+mod controls;
 mod models;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
@@ -40,27 +50,25 @@ impl Display for CustomerId {
     }
 }
 
+#[derive(Default, Clone)]
+struct ProductsCache {
+    pub current_products: Vec<Signal<productView>>,
+}
+
 fn App() -> Element {
     use_context_provider(|| Signal::new(LoadedCategories(None)));
     use_context_provider(|| Signal::new(CustomerId::Default));
+    use_context_provider(|| Signal::new(ProductsCache::default()));
+
     rsx! {
         Router::<Route> {}
     }
 }
 
-use models::{
-    buy_product::{self, BuyProductBuy},
-    get_product,
-    get_products::{self, productView},
-    BuyProduct, GetProduct, GetProducts,
-};
-use shared_types::EmailAddress;
-
 #[component]
 fn Products(selected_id: Signal<String>) -> Element {
-    let customer_id = use_context::<Signal<CustomerId>>();
-
-    let mut future: Resource<Result<Vec<productView>, String>> = use_resource(move || async move {
+    let mut list = use_context::<Signal<ProductsCache>>();
+    let mut fetch: Resource<Result<(), String>> = use_resource(move || async move {
         let client = reqwest::Client::new();
 
         let variables = get_products::Variables {
@@ -76,104 +84,126 @@ fn Products(selected_id: Signal<String>) -> Element {
                 .unwrap();
 
         if !result.errors.is_some() {
-            Ok(result
+            list.write().current_products = result
                 .data
                 .and_then(|p| {
                     Some(
                         p.products_relay
                             .edges
                             .into_iter()
-                            .map(|edge| edge.node)
+                            .map(|edge| use_signal(|| edge.node))
                             .collect(),
                     )
                 })
-                .unwrap())
+                .unwrap();
+            Ok(())
         } else {
-            Err("Failed".to_string())
+            Err(result
+                .errors
+                .unwrap()
+                .iter()
+                .map(|e| e.message.clone())
+                .collect::<Vec<_>>()
+                .join(","))
         }
     });
 
-    let Buy = move |product_id: String, customer_id: CustomerId| {
-        spawn(async move {
-            let client = reqwest::Client::new();
-            let CustomerId::ValidEmail(customer_id) = customer_id else {
-                panic!("should not happen")
-            };
-            let variables = buy_product::Variables {
-                product_id,
-                customer_id,
-            };
-
-            let result =
-                post_graphql::<BuyProduct, _>(&client, "http://localhost:7265/graphql", variables)
-                    .await
-                    .unwrap();
-
-            future.restart();
-        });
-    };
-
     rsx! {
-     table {
-         class:"table table-sm",
-         thead {
-           class:"table-light",
-           th { scope:"col",  "Name" }
-           th { scope:"col",  "Description" }
-           th { scope:"col",  "In Stock" }
-           th { scope:"col",  "Actions" }
-           }
-           tbody {
-               match &*future.read_unchecked() {
-                   Some(Ok(products)) => rsx! {
-                        { products.iter().map(|product| {
-                            let product_id =product.id.clone();
-                            let product_id2 =product.id.clone();
-                            rsx!{
-                                tr {
-                                        key: "{product.id}",
-                                        class: if product.id == *selected_id.read() { "table-active" } else {""},
-                                            onclick: move |_| {
-                                                *selected_id.write() = product_id2.clone();
-                                                },
-                                        td { "{product.name}"}
-                                        td { "{product.description}"}
-                                        td { "{product.in_stock}"}
-                                        td {
-                                            if let CustomerId::ValidEmail(_)=*customer_id.read()  {
-                                                if  product.canBuy() {
-                                                button {
-                                                    r#type: "button",
-                                                    class: "btn btn-primary",
-                                                    onclick: move |_| {
-                                                        Buy(product_id.clone(),customer_id.read().clone())
-                                                    } ,
-                                                    "Buy"
-                                                }
-                                             }
-                                            }
-                                        // <div *ngIf="product.actionsAllowed?.includes('Processing')" class="spinner-border spinner-border-sm" role="status">
-                                        //     <span class="visually-hidden">Processing...</span>
-                                        // </div>
-                                           }
+             table {
+                 class:"table table-sm",
+                 thead {
+                   class:"table-light",
+                   th { scope:"col",  "Name" }
+                   th { scope:"col",  "Description" }
+                   th { scope:"col",  "In Stock" }
+                   th { scope:"col",  "Actions" }
+                   }
+                   tbody {
+                        for p in list.read().current_products.iter() {
+                            ProductRow{
+                                product_signal: p.clone(),
+                                selected_id
+                             }
+                        }
+            }
+        }
+    }
+}
+
+impl productView {
+    pub async fn Buy(mut product: Signal<Self>, customer_id: &CustomerId) {
+        let client = reqwest::Client::new();
+
+        let CustomerId::ValidEmail(customer_id) = customer_id else {
+            panic!("should not happen")
+        };
+        let variables = buy_product::Variables {
+            product_id: product.read().id.clone(),
+            customer_id: customer_id.clone(),
+        };
+
+        product.with_mut(|p| {
+            p.actions_allowed = vec!["Processing".to_string()];
+            p.in_stock -= 1;
+        });
+
+        let result =
+            post_graphql::<BuyProduct, _>(&client, "http://localhost:7265/graphql", variables)
+                .await
+                .unwrap();
+
+        let data = result.data.unwrap().buy.unwrap();
+
+        product.with_mut(|p| {
+            p.actions_allowed = data.actions_allowed;
+            p.in_stock = data.in_stock;
+        });
+    }
+}
+
+#[component]
+fn ProductRow(product_signal: Signal<productView>, selected_id: Signal<String>) -> Element {
+    let customer_id = use_context::<Signal<CustomerId>>();
+    let product = product_signal.read();
+    let product_id = product.id.clone();
+    rsx! {
+        tr {
+            key: "{product.id}",
+            class: if product.id == *selected_id.read() { "table-active" } else {""},
+                        onclick: move |_| {
+                            *selected_id.write() = product_id.clone();
+                            },
+            td { "{product.name}"}
+            td { "{product.description}"}
+            td { "{product.in_stock}"}
+            td {
+                if let CustomerId::ValidEmail(_)=*customer_id.read()  {
+                    if  product.canBuy() {
+                        button {
+                            r#type: "button",
+                            class: "btn btn-primary",
+                            onclick: move |event| {
+                                event.stop_propagation();
+                                spawn(async move {
+                                    productView::Buy(product_signal,&customer_id.read()).await
+                                });
+                            } ,
+                            "Buy"
+                        }
+                    } else {
+                        if product.isProcessing() {
+                            div {
+                                class: "spinner-border spinner-border-sm",
+                                role:"status",
+                                span {
+                                    class:"visually-hidden",
+                                    "Processing.."
                                 }
-                            }
-                       }) }
-                    },
-                    Some(Err(_)) => rsx! {
-                            tr {
-                                td {
-                                colspan:"4",
-                                "Error"
-                                }
-                            }
-                        },
-                    None => rsx! {
-                            tr {
-                                td { colspan:"4","Loading"}
                             }
                         }
+                    }
                 }
+
             }
         }
     }
@@ -181,46 +211,24 @@ fn Products(selected_id: Signal<String>) -> Element {
 
 #[component]
 fn Home() -> Element {
-    let mut selected_id = use_signal(|| "".to_string());
-
+    let selected_id = use_signal(|| "".to_string());
     rsx! {
-        div {
-            class:"card",
-            h5 {
-                class:" card-header",
-                "Shop"
-            }
-            div {
-                class:"card-body",
-                Products {
-                    selected_id: selected_id
-                }
+        Card {
+            title: "Shop",
+            Products {
+                selected_id
             }
         }
-        div {
-            class:"card",
-            h5 {
-                class:" card-header",
-                "Product details"
-            }
-            div {
-                class:"card-body",
-                Product {
-                    selected_id: selected_id
-                }
-            }
+       Card {
+         title:"Product details",
+         Product {
+            selected_id
         }
-        div {
-            class:"card",
-            h5 {
-                class:" card-header",
-                "Basket"
-            }
-            div {
-                class:"card-body",
-                Basket{}
-            }
-        }
+       }
+       Card {
+        title:"Basket",
+        Basket{}
+      }
     }
 }
 
@@ -263,44 +271,33 @@ fn Product(selected_id: Signal<String>) -> Element {
         });
 
     if *selected_id.read() != "" {
-        match &*future.read_unchecked() {
+        match &*future.read() {
             Some(Ok(response)) => rsx! {
                 {
+                    let list = use_context::<Signal<ProductsCache>>();
+
                 response.clone().product.and_then(|product| {
                     rsx!{
-                    div {
-                        class:"mb-3",
-                        label {
-                            r#for:"name",
-                            class:"form-label",
-                            "Product name"
-                        },
-                        input {
-                            class:"form-control",
-                            readonly:true,
-                            id:"name",
-                            value:"{product.name}"}
-                      }
-                    div {
-                        class:"mb-3",
-                        label {
-                             r#for:"description",
-                             class:"form-label",
-                            " Product description"
-                        },
-                        input {
-                             class:"form-control",
-                             readonly:true,
-                             id:"description",
-                             value:"{product.description}"
+                    controls::bootstrap::Input {
+                        value: "{product.name}",
+                        label: "Product name",
+                        readonly: true
+                    }
+                    controls::bootstrap::Input {
+                        value: "{product.description}",
+                        label: "Product description",
+                        readonly: true
+                    }
+
+                    if list.read().current_products.iter().find(|p| p.read().id == *selected_id.read() ).is_some_and( |p| p.read().isProcessing() ) {
+                        div {
+                            class: "alert alert-primary",
+                            role: "alert",
+                            "Processing Order"
                         }
                     }
-                    div {
-                        class:"card",
-                        div {
-                            class:"card-header",
-                            "Product categories"
-                        },
+                    Card {
+                        title: "Product categories",
                         ul {
                             class:"list-group list-group-flush",
                             {
@@ -308,14 +305,9 @@ fn Product(selected_id: Signal<String>) -> Element {
                                 {
                                   loaded.read().0.clone().unwrap()
                                     .iter().map( |category |{
-                                        let classes = if product.hasCategory(&category) {
-                                            "list-group-item active"
-                                        } else {
-                                             "list-group-item"
-                                        };
                                         rsx!{
                                             li {
-                                                class:classes,
+                                                class: if product.hasCategory(&category) {    "list-group-item active"   } else{"list-group-item"   },
                                                 "{category.name}"
                                             }
                                         }
@@ -325,7 +317,7 @@ fn Product(selected_id: Signal<String>) -> Element {
                               }
                             }
                         }
-                    }
+                    }    
                   }
                 }).or_else(|| rsx! {
                     tr {

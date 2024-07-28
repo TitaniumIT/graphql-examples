@@ -13,5 +13,7 @@ impl get_product::productDetailView {
     pub fn hasCategory(&self, category: &get_product::categoryView) -> bool {
         self.selected_categories.iter().any(|c| c.id == category.id)
     }
+
+    
 }
 
