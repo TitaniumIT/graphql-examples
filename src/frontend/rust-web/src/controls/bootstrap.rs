@@ -51,10 +51,7 @@ pub fn Table(caption:Option<String>,columns:Vec<String>,body:Element) -> Element
                  thead {
                    class:"table-light",
                    for header in columns {
-                        th { 
-                            scope:"col",  
-                            "{header}" 
-                        }
+                        th { scope:"col",  "{header}" }
                    }
                    }
                 tbody {

@@ -14,7 +14,7 @@ impl ProductsCache {
         self.current_products
             .iter()
             .find(|p| p.read().selected)
-            .map(|f| f.clone())
+            .copied() 
     }
 }
 
@@ -44,11 +44,9 @@ pub fn Products(selected_id: Signal<String>) -> Element {
                 .await
                 .unwrap();
 
-        if !result.errors.is_some() {
+        if result.errors.is_none() {
             list.write().current_products = result
-                .data
-                .and_then(|p| {
-                    Some(
+                .data.map(|p| 
                         p.products_relay
                             .edges
                             .into_iter()
@@ -58,10 +56,8 @@ pub fn Products(selected_id: Signal<String>) -> Element {
                                     selected: false,
                                 })
                             })
-                            .collect(),
-                    )
-                })
-                .unwrap();
+                            .collect()
+                ).expect("should have data");
             Ok(())
         } else {
             Err(result
@@ -80,7 +76,7 @@ pub fn Products(selected_id: Signal<String>) -> Element {
             body: rsx!{
                 for p in list.read().current_products.iter() {
                   ProductRow{
-                    product_signal: p.clone(),
+                    product_signal: *p,
                  }
              }
          }

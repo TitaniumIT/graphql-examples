@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
 
-use crate::{controls::{self, bootstrap::{Card, Input}}, models::{get_product, GetProduct}};
+use crate::{controls::{ bootstrap::{Card, Input}}, models::{get_product, GetProduct}};
 
 use super::productlist::ProductsCache;
 
@@ -25,7 +25,7 @@ pub fn Product() -> Element {
                 info!("Product detail fetched");
 
                 let variables = get_product::Variables {
-                    product_id: format!("{selected_id}"),
+                    product_id: selected_id.to_string(),
                     load_categories: loaded.read().0.is_none(),
                 };
 
@@ -37,7 +37,7 @@ pub fn Product() -> Element {
                 .await;
 
                 if let Ok(result) = result {
-                    if !result.errors.is_some() {
+                    if result.errors.is_none() {
                         let data = result.data.unwrap();
                         if let Some(categories) = data.categories.clone() {
                             *loaded.write() = LoadedCategories(Some(categories));
@@ -64,7 +64,7 @@ pub fn Product() -> Element {
                 {
                     let list = use_context::<Signal<ProductsCache>>();
 
-                response.clone().product.and_then(|product| {
+                response.clone().product.map(|product| 
                     rsx!{
                      Input {
                         value: "{product.name}",
@@ -95,7 +95,7 @@ pub fn Product() -> Element {
                                     .iter().map( |category |{
                                         rsx!{
                                             li {
-                                                class: if product.hasCategory(&category) {    "list-group-item active"   } else{"list-group-item"   },
+                                                class: if product.hasCategory(category) {    "list-group-item active"   } else{"list-group-item"   },
                                                 "{category.name}"
                                             }
                                         }
@@ -107,11 +107,11 @@ pub fn Product() -> Element {
                         }
                     }
                   }
-                }).or_else(|| rsx! {
+                ).or_else(|| rsx! {
                     tr {
                         td { colspan:"4","Loading"}
                     }
-                } )
+                }.into() )
             }
             },
             Some(Err(err)) => rsx! {

@@ -1,11 +1,8 @@
 #![allow(non_snake_case)]
-use controls::bootstrap::{Card, Table};
+use controls::bootstrap::Card;
 use dioxus::prelude::*;
 use log::{info, LevelFilter};
 use views::{basket::{Basket, CustomerId}, productdetails::{LoadedCategories, Product}, productlist::{Products, ProductsCache}};
-use std::fmt::Display;
-
-use shared_types::EmailAddress;
 
 mod controls;
 mod models;
