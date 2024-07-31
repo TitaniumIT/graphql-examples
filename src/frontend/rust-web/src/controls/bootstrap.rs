@@ -37,3 +37,29 @@ pub fn Card(title:String, children : Element) -> Element {
         }
 }
 }
+
+#[component]
+pub fn Table(caption:Option<String>,columns:Vec<String>,body:Element) -> Element {
+    rsx! {
+             table {
+                 class:"table table-sm",
+                 if let Some(caption) = caption {
+                    caption {
+                        "{caption}"
+                    }
+                 }
+                 thead {
+                   class:"table-light",
+                   for header in columns {
+                        th { 
+                            scope:"col",  
+                            "{header}" 
+                        }
+                   }
+                   }
+                tbody {
+                    { body }
+                }
+            }
+        }
+    }

@@ -5,7 +5,7 @@ use graphql_client::GraphQLQuery;
     schema_path = "src/schema.graphqls",
     query_path = "src/models/getproduct.graphql",
     normalization = "rust",
-    response_derives = "Debug,Clone"
+    response_derives = "Debug,Clone,Default"
 )]
 pub struct GetProduct;
 
@@ -13,7 +13,5 @@ impl get_product::productDetailView {
     pub fn hasCategory(&self, category: &get_product::categoryView) -> bool {
         self.selected_categories.iter().any(|c| c.id == category.id)
     }
-
-    
 }
 

@@ -5,7 +5,7 @@ use graphql_client:: GraphQLQuery;
     schema_path = "src/schema.graphqls",
     query_path = "src/models/getproducts.graphql",
     normalization = "rust",
-    response_derives = "Debug,Clone,PartialEq,Eq"
+    response_derives = "Debug,Clone,PartialEq,Eq,Default"
 )]
 pub struct GetProducts;
 
