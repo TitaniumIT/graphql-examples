@@ -2,7 +2,7 @@
 use dioxus::prelude::*;
 
 #[component]
-pub fn Input(value:String,label:String,readonly:bool) -> Element{
+pub fn Input(value:String,label:String,readonly:bool,placeholder:Option<String>) -> Element{
     rsx!{
         div {
             class:"mb-3",
@@ -15,7 +15,8 @@ pub fn Input(value:String,label:String,readonly:bool) -> Element{
                 class:"form-control",
                 readonly,
                 id:"name",
-                value:"{value}"
+                value:"{value}",
+                placeholder: if let Some(placeholder) = placeholder { placeholder} 
             }
           }
     }

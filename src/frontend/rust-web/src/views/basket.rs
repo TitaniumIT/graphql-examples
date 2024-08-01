@@ -12,6 +12,12 @@ pub enum CustomerId {
     Default,
 }
 
+impl CustomerId {
+    fn is_not_default(&self) -> bool {
+       if let Self::Default = self { true } else { false }
+    }
+}
+
 impl Display for CustomerId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -30,15 +36,20 @@ pub fn Basket() -> Element {
             input {
                 class: format!("form-control {}" , if let CustomerId::Invalid(_) = *customer_id.read() { "is-invalid"} else { "is-valid"}),
                 id:"customerid",
-                value:"{customer_id}",
+                value: if customer_id.read().is_not_default() { "{customer_id}" },
                 required:true,
+                placeholder: if let CustomerId::Default = *customer_id.read() { format!("{customer_id}")} ,
                 r#type:"email",
                 oninput: move |event|{
                     let result =  EmailAddress::new(&event.value());
                     if let Ok(email) = result {
                         customer_id.set(CustomerId::ValidEmail(email));
                     } else {
-                        customer_id.set(CustomerId::Invalid(event.value()));
+                        if event.value().is_empty() {
+                            customer_id.set(CustomerId::Default)
+                        } else {
+                            customer_id.set(CustomerId::Invalid(event.value()));
+                        }
                     }
                 }
             },
