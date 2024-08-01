@@ -40,7 +40,7 @@ pub fn Card(title:String, children : Element) -> Element {
 }
 
 #[component]
-pub fn Table(caption:Option<String>,columns:Vec<String>,body:Element) -> Element {
+pub fn Table(caption:Option<String>,columns:Vec<String>,children:Element) -> Element {
     rsx! {
              table {
                  class:"table table-sm",
@@ -56,7 +56,7 @@ pub fn Table(caption:Option<String>,columns:Vec<String>,body:Element) -> Element
                    }
                    }
                 tbody {
-                    { body }
+                    { children }
                 }
             }
         }

@@ -39,13 +39,11 @@ fn App() -> Element {
 
 #[component]
 fn Home() -> Element {
-    let selected_id = use_signal(|| "".to_string());
     info!("Home rendered");
     rsx! {
         Card {
             title: "Shop",
             Products {
-                selected_id
             }
         }
        Card {

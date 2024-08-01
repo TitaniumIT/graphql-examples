@@ -2,11 +2,20 @@ use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
 
-use crate::{controls::bootstrap::Table, models::{buy_product, get_products::{self, productView}, BuyProduct, GetProducts}, CustomerId};
+use crate::{
+    controls::bootstrap::Table,
+    models::{
+        buy_product,
+        get_products::{self, pageInfoView, productView},
+        BuyProduct, GetProducts,
+    },
+    CustomerId,
+};
 
 #[derive(Default, Clone)]
 pub struct ProductsCache {
     pub current_products: Vec<Signal<ProductRowState>>,
+    pub page_info : pageInfoView
 }
 
 impl ProductsCache {
@@ -14,7 +23,7 @@ impl ProductsCache {
         self.current_products
             .iter()
             .find(|p| p.read().selected)
-            .copied() 
+            .copied()
     }
 }
 
@@ -24,40 +33,43 @@ pub struct ProductRowState {
     pub selected: bool,
 }
 
-
 #[component]
-pub fn Products(selected_id: Signal<String>) -> Element {
+pub fn Products() -> Element {
     let mut list = use_context::<Signal<ProductsCache>>();
-    let _fetch: Resource<Result<(), String>> = use_resource(move || async move {
-        info!("Products fetched");
-        let client = reqwest::Client::new();
-
-        let variables = get_products::Variables {
+    let mut input_variables = use_signal(|| get_products::Variables {
             first: Some(5),
             after: None,
             before: None,
             last: None,
-        };
+        });
+    let _fetch: Resource<Result<(), String>> = use_resource(move || async move {
+        info!("Products fetched");
+        let client = reqwest::Client::new();
+
+        let variables = input_variables.read().clone();
 
         let result =
-            post_graphql::<GetProducts, _>(&client, "http://localhost:7265/graphql", variables)
+            post_graphql::<GetProducts, _>(&client, "http://localhost:7265/graphql", variables )
                 .await
                 .unwrap();
 
         if result.errors.is_none() {
-            list.write().current_products = result
-                .data.map(|p| 
-                        p.products_relay
-                            .edges
-                            .into_iter()
-                            .map(|edge| {
-                                use_signal(|| ProductRowState {
-                                    data: edge.node,
-                                    selected: false,
-                                })
+            list.with_mut(|l| { 
+                let data = result.data;
+                data.map(|r| {
+                    l.current_products = r.products_relay
+                        .edges
+                        .into_iter()
+                        .map(|edge| {
+                            Signal::new( ProductRowState {
+                                data: edge.node,
+                                selected: false,
                             })
-                            .collect()
-                ).expect("should have data");
+                        })
+                        .collect();
+                    l.page_info = r.products_relay.page_info;
+                });
+             });
             Ok(())
         } else {
             Err(result
@@ -73,23 +85,63 @@ pub fn Products(selected_id: Signal<String>) -> Element {
     rsx! {
          Table {
             columns: [ "Name", "Description" , "In Stock" , "Actions" ].map(String::from).to_vec(),
-            body: rsx!{
-                for p in list.read().current_products.iter() {
+            for (i,p) in list.read().current_products.iter().enumerate() {
                   ProductRow{
-                    product_signal: *p,
+                    key: "{i}",
+                    product_signal: *p
                  }
-             }
          }
        }
+       ul {
+          class: "pagination",
+          li {
+             class: if !list.read().page_info.has_previous_page { "page-item disabled"} else { "page-item" },
+             a {
+                class: "page-link",
+                role: "button",
+                aria_disabled: !list.read().page_info.has_previous_page,
+                onclick : move |_| {
+                    input_variables.with_mut( |i| {
+                        let pageinfo = list.read().page_info.clone();
+                        i.first = None;
+                        i.after = None;
+                        i.last= Some(5);
+                        i.before= pageinfo.start_cursor;
+                 } )},
+                span {
+                   aria_hidden: true,
+                   dangerous_inner_html: "&laquo;"
+                 }
+             }
+          }
+      li {
+             class: if !list.read().page_info.has_next_page { "page-item disabled"} else { "page-item" },
+             a {
+                class: "page-link",
+                role: "button",
+                aria_disabled: !list.read().page_info.has_next_page,
+                onclick : move |_| {
+                    input_variables.with_mut( |i| {
+                        let pageinfo = list.read().page_info.clone();
+                        i.first = Some(5);
+                        i.after = pageinfo.end_cursor;
+                        i.last=Option::None;
+                        i.before=Option::None;
+                 } )}, 
+                 span {
+                   aria_hidden: true,
+                   dangerous_inner_html: "&raquo;"
+                 }
+             }
+          } }
     }
 }
 
-
 #[component]
 pub fn ProductRow(product_signal: Signal<ProductRowState>) -> Element {
+    info!("Product row rendered");
     let customer_id = use_context::<Signal<CustomerId>>();
     let product = &product_signal.read().data;
-    info!("Product row rendered");
     rsx! {
         tr {
             key: "{product.id}",
@@ -105,12 +157,16 @@ pub fn ProductRow(product_signal: Signal<ProductRowState>) -> Element {
             td { "{product.name}"}
             td { "{product.description}"}
             td { "{product.in_stock}"}
-            { RowActions(product_signal,product,customer_id) }      
+            { RowActions(product_signal,product,customer_id) }
         }
     }
 }
 
-fn RowActions(product_signal:Signal::<ProductRowState>,product:&productView,customer_id:Signal::<CustomerId>) -> Element {
+fn RowActions(
+    product_signal: Signal<ProductRowState>,
+    product: &productView,
+    customer_id: Signal<CustomerId>,
+) -> Element {
     rsx!(
          td {
                 if let CustomerId::ValidEmail(_)=*customer_id.read()  {
@@ -143,7 +199,6 @@ fn RowActions(product_signal:Signal::<ProductRowState>,product:&productView,cust
     )
 }
 
-
 impl productView {
     pub async fn Buy(mut product: Signal<ProductRowState>, customer_id: &CustomerId) {
         info!("Product buy");
@@ -175,4 +230,3 @@ impl productView {
         });
     }
 }
-

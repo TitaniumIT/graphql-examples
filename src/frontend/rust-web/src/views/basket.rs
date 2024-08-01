@@ -61,9 +61,6 @@ pub fn Basket() -> Element {
         Table {
             caption: "Basket for {customer_id}",
             columns: [ "Name" ,"ordered" ,"intansit" ,"deliverd" ,"cancelled" ].map(String::from).to_vec(),
-            body : rsx!{
-
-            }
         }
     }
     //             <tr *ngFor="let product of inBasket" scope="row" >
