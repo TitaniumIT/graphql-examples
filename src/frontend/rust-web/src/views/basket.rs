@@ -3,7 +3,7 @@ use std::fmt::Display;
 use dioxus::prelude::*;
 use shared_types::EmailAddress;
 
-use crate::controls::bootstrap::Table;
+use crate::{controls::bootstrap::Table, models::{buy_product::productsInTransit, get_basket_products::BasketView}};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CustomerId {
@@ -14,6 +14,9 @@ pub enum CustomerId {
 
 impl CustomerId {
     fn is_not_default(&self) -> bool {
+       if let Self::Default = self { false } else { true }
+    }
+    fn is_default(&self) -> bool {
        if let Self::Default = self { true } else { false }
     }
 }
@@ -28,9 +31,14 @@ impl Display for CustomerId {
     }
 }
 
+#[derive(Default,Clone)]
+pub struct ProductsInTransiteCache {
+    pub basket: Vec<Signal<BasketView>>
+}
+
 pub fn Basket() -> Element {
     let mut customer_id = use_context::<Signal<CustomerId>>();
-    
+     let mut list = use_context::<Signal<ProductsInTransiteCache>>();
     rsx! {
         div{
             input {
@@ -38,7 +46,7 @@ pub fn Basket() -> Element {
                 id:"customerid",
                 value: if customer_id.read().is_not_default() { "{customer_id}" },
                 required:true,
-                placeholder: if let CustomerId::Default = *customer_id.read() { format!("{customer_id}")} ,
+                placeholder: if customer_id.read().is_default() { "{customer_id}" } ,
                 r#type:"email",
                 oninput: move |event|{
                     let result =  EmailAddress::new(&event.value());
@@ -61,8 +69,15 @@ pub fn Basket() -> Element {
         Table {
             caption: "Basket for {customer_id}",
             columns: [ "Name" ,"ordered" ,"intansit" ,"deliverd" ,"cancelled" ].map(String::from).to_vec(),
+            for row in list.read().basket.iter() {
+                BasketRowView {
+                    basket_row: *row
+                }
+            }
         }
     }
+   }
+ 
     //             <tr *ngFor="let product of inBasket" scope="row" >
     //                 <td>{{product.name}}</td>
     //                 <td>{{product.nrOrderd}}</td>
@@ -72,4 +87,14 @@ pub fn Basket() -> Element {
     //             </tr>
     //     </tbody>
     // </table>
+
+#[component]
+fn BasketRowView(basket_row: Signal<BasketView>) -> Element {
+    let row = basket_row.read();
+    rsx! {
+       tr { 
+         td { "{row.name}" }
+         td { "{row.name}" }
+         }
+    }
 }

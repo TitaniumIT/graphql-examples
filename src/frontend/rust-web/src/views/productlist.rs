@@ -3,13 +3,9 @@ use graphql_client::reqwest::post_graphql;
 use log::info;
 
 use crate::{
-    controls::bootstrap::Table,
-    models::{
-        buy_product,
-        get_products::{self, pageInfoView, productView},
-        BuyProduct, GetProducts,
-    },
-    CustomerId,
+    controls::bootstrap::Table, models::{
+        buy_product, get_basket_products::{BasketView, BasketViewInTransit}, get_products::{self, pageInfoView, productView}, BuyProduct, GetProducts
+    }, views::basket::ProductsInTransiteCache, CustomerId
 };
 
 #[derive(Default, Clone)]
@@ -201,7 +197,7 @@ fn RowActions(
 
 impl productView {
     pub async fn Buy(mut product: Signal<ProductRowState>, customer_id: &CustomerId) {
-        info!("Product buy");
+        info!("Product buy");  
         let client = reqwest::Client::new();
 
         let CustomerId::ValidEmail(customer_id) = customer_id else {
@@ -228,5 +224,21 @@ impl productView {
             p.data.actions_allowed = data.actions_allowed;
             p.data.in_stock = data.in_stock;
         });
+        
+        let mut list = use_context::<Signal<ProductsInTransiteCache>>();
+        list.with_mut(|c| {
+            c.basket.push(
+                Signal::new( BasketView {
+                    id: data.id,
+                    name: data.name,
+                    in_transit : data.in_transit.iter().map(|t| BasketViewInTransit {
+                        id: t.id.clone(),
+                        product_id: t.product_id.clone(),
+                        state: t.state.clone() 
+                    }).collect() 
+                }) 
+            );
+        });
+        
     }
 }

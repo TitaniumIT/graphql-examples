@@ -13,7 +13,6 @@ pub struct GetBasketProducts;
 type EmailAddressScalar = EmailAddress;
 
 
-
 /*
     inBasket @client
     nrOrderd @client

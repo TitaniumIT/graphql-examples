@@ -10,3 +10,4 @@ pub use getproducts::GetProducts;
 pub use getproducts::get_products;
 pub use buyproduct::BuyProduct;
 pub use buyproduct::buy_product;
+pub use getbasket::get_basket_products;
