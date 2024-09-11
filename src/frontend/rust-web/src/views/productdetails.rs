@@ -2,14 +2,13 @@ use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
 
-use crate::{controls::{ bootstrap::{Card, Input}}, models::{get_product, GetProduct}};
+use crate::{controls::bootstrap::{Card, Input}, models::{get_product, GetProduct}, APIURL};
 
 use super::productlist::ProductsCache;
 
 
 #[derive(Clone)]
 pub struct LoadedCategories(pub Option<Vec<get_product::categoryView>>);
-
 
 #[component]
 pub fn Product() -> Element {
@@ -31,7 +30,7 @@ pub fn Product() -> Element {
 
                 let result = post_graphql::<GetProduct, _>(
                     &client,
-                    "http://localhost:7265/graphql",
+                    APIURL,
                     variables,
                 )
                 .await;

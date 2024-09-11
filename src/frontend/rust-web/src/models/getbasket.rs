@@ -12,10 +12,32 @@ pub struct GetBasketProducts;
 
 type EmailAddressScalar = EmailAddress;
 
+pub trait BasketClientProperies: Sized {
+    fn nrOrderd(&self) -> i32;
+    fn nrInTransit(&self) -> i32;
+    fn nrDeliverd(&self) -> i32;
+    fn nrCancelled(&self) -> i32;
+    fn name(&self) -> &String;
+}
 
-/*
-    inBasket @client
-    nrOrderd @client
-    nrInTransit @client
-    nrDeliverd @client
-    nrCancelled @client  */
+impl BasketClientProperies for get_basket_products::BasketView {
+    fn nrOrderd(&self) -> i32 {
+       1
+    }
+
+    fn nrInTransit(&self) -> i32 {
+        todo!()
+    }
+
+    fn nrDeliverd(&self) -> i32 {
+        todo!()
+    }
+
+    fn nrCancelled(&self) -> i32 {
+        todo!()
+    }
+
+    fn name(&self) -> &String {
+       &self.name
+    }
+}

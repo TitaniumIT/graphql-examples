@@ -5,7 +5,7 @@ use log::info;
 use crate::{
     controls::bootstrap::Table, models::{
         buy_product, get_basket_products::{BasketView, BasketViewInTransit}, get_products::{self, pageInfoView, productView}, BuyProduct, GetProducts
-    }, views::basket::ProductsInTransiteCache, CustomerId
+    }, views::basket::ProductsInTransiteCache, CustomerId, APIURL
 };
 
 #[derive(Default, Clone)]
@@ -45,7 +45,7 @@ pub fn Products() -> Element {
         let variables = input_variables.read().clone();
 
         let result =
-            post_graphql::<GetProducts, _>(&client, "http://localhost:7265/graphql", variables )
+            post_graphql::<GetProducts, _>(&client, APIURL , variables )
                 .await
                 .unwrap();
 
@@ -214,7 +214,7 @@ impl productView {
         });
 
         let result =
-            post_graphql::<BuyProduct, _>(&client, "http://localhost:7265/graphql", variables)
+            post_graphql::<BuyProduct, _>(&client, APIURL, variables)
                 .await
                 .unwrap();
 

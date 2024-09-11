@@ -8,6 +8,8 @@ mod controls;
 mod models;
 mod views;
 
+static APIURL: &str = "http://graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080/graphql";
+
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
     #[route("/")]

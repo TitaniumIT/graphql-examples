@@ -3,7 +3,7 @@ use std::fmt::Display;
 use dioxus::prelude::*;
 use shared_types::EmailAddress;
 
-use crate::{controls::bootstrap::Table, models::{buy_product::productsInTransit, get_basket_products::BasketView}};
+use crate::{controls::bootstrap::Table, models::{buy_product::productsInTransit, get_basket_products::BasketView, BasketClientProperies}};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CustomerId {
@@ -38,7 +38,7 @@ pub struct ProductsInTransiteCache {
 
 pub fn Basket() -> Element {
     let mut customer_id = use_context::<Signal<CustomerId>>();
-     let mut list = use_context::<Signal<ProductsInTransiteCache>>();
+    let mut list = use_context::<Signal<ProductsInTransiteCache>>();
     rsx! {
         div{
             input {
@@ -93,8 +93,8 @@ fn BasketRowView(basket_row: Signal<BasketView>) -> Element {
     let row = basket_row.read();
     rsx! {
        tr { 
-         td { "{row.name}" }
-         td { "{row.name}" }
+         td { "{row.name()}" }
+         td { "{row.nrOrderd()}" }
          }
     }
 }

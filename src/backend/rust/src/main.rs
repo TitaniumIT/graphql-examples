@@ -49,7 +49,10 @@ async fn main() {
     });
 
     let cors = warp::cors()
-        .allow_origins(vec!["http://localhost:4200", "http://localhost:7265" , "http://localhost:8080"])
+        .allow_origins(vec!["http://localhost:4200", 
+                     "http://localhost:7265" ,
+                     "http://localhost:8080" ,
+                     "http://graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080"])
         .allow_methods(vec!["POST", "OPTIONS"])
         .allow_headers(vec![
             "User-Agent",
