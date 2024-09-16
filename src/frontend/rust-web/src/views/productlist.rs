@@ -1,17 +1,25 @@
+use std::ops::IndexMut;
+
 use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
 
 use crate::{
-    controls::bootstrap::Table, models::{
-        buy_product, get_basket_products::{BasketView, BasketViewInTransit}, get_products::{self, pageInfoView, productView}, BuyProduct, GetProducts
-    }, views::basket::ProductsInTransiteCache, CustomerId, APIURL
+    controls::bootstrap::Table,
+    models::{
+        buy_product,
+        get_basket_products::{BasketView, BasketViewInTransit},
+        get_products::{self, pageInfoView, productView},
+        BuyProduct, GetProducts,
+    },
+    views::basket::ProductsInTransiteCache,
+    CustomerId, APIURL,
 };
 
 #[derive(Default, Clone)]
 pub struct ProductsCache {
     pub current_products: Vec<Signal<ProductRowState>>,
-    pub page_info : pageInfoView
+    pub page_info: pageInfoView,
 }
 
 impl ProductsCache {
@@ -33,31 +41,31 @@ pub struct ProductRowState {
 pub fn Products() -> Element {
     let mut list = use_context::<Signal<ProductsCache>>();
     let mut input_variables = use_signal(|| get_products::Variables {
-            first: Some(5),
-            after: None,
-            before: None,
-            last: None,
-        });
+        first: Some(5),
+        after: None,
+        before: None,
+        last: None,
+    });
     let _fetch: Resource<Result<(), String>> = use_resource(move || async move {
         info!("Products fetched");
         let client = reqwest::Client::new();
 
         let variables = input_variables.read().clone();
 
-        let result =
-            post_graphql::<GetProducts, _>(&client, APIURL , variables )
-                .await
-                .unwrap();
+        let result = post_graphql::<GetProducts, _>(&client, APIURL, variables)
+            .await
+            .unwrap();
 
         if result.errors.is_none() {
-            list.with_mut(|l| { 
+            list.with_mut(|l| {
                 let data = result.data;
                 data.map(|r| {
-                    l.current_products = r.products_relay
+                    l.current_products = r
+                        .products_relay
                         .edges
                         .into_iter()
                         .map(|edge| {
-                            Signal::new( ProductRowState {
+                            Signal::new(ProductRowState {
                                 data: edge.node,
                                 selected: false,
                             })
@@ -65,7 +73,7 @@ pub fn Products() -> Element {
                         .collect();
                     l.page_info = r.products_relay.page_info;
                 });
-             });
+            });
             Ok(())
         } else {
             Err(result
@@ -123,7 +131,7 @@ pub fn Products() -> Element {
                         i.after = pageinfo.end_cursor;
                         i.last=Option::None;
                         i.before=Option::None;
-                 } )}, 
+                 } )},
                  span {
                    aria_hidden: true,
                    dangerous_inner_html: "&raquo;"
@@ -197,7 +205,7 @@ fn RowActions(
 
 impl productView {
     pub async fn Buy(mut product: Signal<ProductRowState>, customer_id: &CustomerId) {
-        info!("Product buy");  
+        info!("Product buy");
         let client = reqwest::Client::new();
 
         let CustomerId::ValidEmail(customer_id) = customer_id else {
@@ -213,10 +221,9 @@ impl productView {
             p.data.in_stock -= 1;
         });
 
-        let result =
-            post_graphql::<BuyProduct, _>(&client, APIURL, variables)
-                .await
-                .unwrap();
+        let result = post_graphql::<BuyProduct, _>(&client, APIURL, variables)
+            .await
+            .unwrap();
 
         let data = result.data.unwrap().buy.unwrap();
 
@@ -224,21 +231,38 @@ impl productView {
             p.data.actions_allowed = data.actions_allowed;
             p.data.in_stock = data.in_stock;
         });
-        
+
         let mut list = use_context::<Signal<ProductsInTransiteCache>>();
         list.with_mut(|c| {
-            c.basket.push(
-                Signal::new( BasketView {
+            if let Some(index) = c.basket.iter().position(|p| p.read().id == data.id) {
+                c.basket[index] = Signal::new(BasketView {
                     id: data.id,
                     name: data.name,
-                    in_transit : data.in_transit.iter().map(|t| BasketViewInTransit {
-                        id: t.id.clone(),
-                        product_id: t.product_id.clone(),
-                        state: t.state.clone() 
-                    }).collect() 
-                }) 
-            );
+                    in_transit: data
+                        .in_transit
+                        .iter()
+                        .map(|t| BasketViewInTransit {
+                            id: t.id.clone(),
+                            product_id: t.product_id.clone(),
+                            state: t.state.clone(),
+                        })
+                        .collect(),
+                });
+            } else {
+                c.basket.push(Signal::new(BasketView {
+                    id: data.id,
+                    name: data.name,
+                    in_transit: data
+                        .in_transit
+                        .iter()
+                        .map(|t| BasketViewInTransit {
+                            id: t.id.clone(),
+                            product_id: t.product_id.clone(),
+                            state: t.state.clone(),
+                        })
+                        .collect(),
+                }));
+            }
         });
-        
     }
 }

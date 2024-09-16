@@ -17,8 +17,8 @@ impl get_basket_products::BasketView {
        1
     }
 
-    pub fn nrInTransit(&self) -> i32 {
-       0
+    pub fn nrInTransit(&self) -> usize {
+       self.in_transit.iter().filter(|f|f.state == "InTransit").count()
     }
 
     pub fn nrDeliverd(&self) -> i32 {
