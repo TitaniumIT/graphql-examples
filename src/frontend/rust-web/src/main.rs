@@ -2,7 +2,7 @@
 use controls::bootstrap::Card;
 use dioxus::prelude::*;
 use log::{info, LevelFilter};
-use views::{basket::{Basket, CustomerId, ProductsInTransiteCache}, productdetails::{LoadedCategories, Product}, productlist::{Products, ProductsCache}};
+use views::{basket::{Basket, CustomerId, ProductsInTransiteCache}, productdetails::{LoadedCategories, Product}, productlist::{Products, ProductsCache}, manager::Manager};
 
 mod controls;
 mod models;
@@ -14,6 +14,8 @@ static APIURL: &str = "http://graphqlrust.g2achzdggfa3ayee.westeurope.azureconta
 enum Route {
     #[route("/")]
     Home {},
+    #[route("/manager")]
+    Manager {},
 }
 
 fn main() {

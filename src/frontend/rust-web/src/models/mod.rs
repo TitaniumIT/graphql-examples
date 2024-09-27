@@ -3,6 +3,7 @@ mod getproduct;
 mod getproducts;
 mod buyproduct;
 mod getbasket;
+mod getManagerProducts;
 
 pub use getproduct::GetProduct;
 pub use getproduct::get_product;

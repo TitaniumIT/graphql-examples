@@ -77,16 +77,6 @@ pub fn Basket() -> Element {
         }
     }
    }
- 
-    //             <tr *ngFor="let product of inBasket" scope="row" >
-    //                 <td>{{product.name}}</td>
-    //                 <td>{{product.nrOrderd}}</td>
-    //                 <td>{{ product.nrInTransit }}</td>
-    //                 <td>{{ product.nrDeliverd }}</td>
-    //                 <td>{{ product.nrCancelled }}</td>
-    //             </tr>
-    //     </tbody>
-    // </table>
 
 #[component]
 fn BasketRowView(basket_row: Signal<BasketView>) -> Element {

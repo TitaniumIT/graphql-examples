@@ -13,8 +13,10 @@ pub struct GetBasketProducts;
 type EmailAddressScalar = EmailAddress;
 
 impl get_basket_products::BasketView {
-    pub fn nrOrderd(&self) -> i32 {
-       1
+    pub fn nrOrderd(&self) -> usize {
+       let mut ids : Vec<String> =self.in_transit.iter().map(|e| e.id.clone() ).collect();
+       ids.dedup();
+       ids.iter().count() 
     }
 
     pub fn nrInTransit(&self) -> usize {

@@ -2,6 +2,13 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=827846
   "recommendations": [
     "angular.ng-template",
-    "rust-lang.rust-analyzer"
+    "ms-dotnettools.vscode-dotnet-runtime",
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit",
+    "ms-azuretools.vscode-docker",
+    "graphql.vscode-graphql",
+    "graphql.vscode-graphql-syntax",
+    "ms-dotnettools.vscodeintellicode-csharp",
+    "nrwl.angular-console"
   ]
 }
