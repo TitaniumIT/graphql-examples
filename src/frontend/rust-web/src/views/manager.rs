@@ -6,10 +6,13 @@ use crate::{controls::bootstrap::{Card, Input, Table}, APIURL};
 
 #[component]
 pub fn Manager() -> Element {
+
+    
+
+
     rsx!{
-       p {
-         "Manager"
-       }
+       Card {
+        title: "Manager",
        Table {
          columns:[
             "Product",
@@ -18,6 +21,7 @@ pub fn Manager() -> Element {
             "Actions"
          ].map(String::from).to_vec()
        }
+      }
     }
 }
 

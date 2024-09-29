@@ -1,9 +1,21 @@
 query getManagerProducts {
   allProducts {
     __typename
-    ... on IProduct {
+    ... on Product {
       name
       id
+      actionsAllowed
+    }
+    ... on ProductInBackorder {
+      name
+      id
+      actionsAllowed
+    }
+    ... on ProductInTransit{
+      name
+      id
+      actionsAllowed
+      customerId
     }
   }
 }

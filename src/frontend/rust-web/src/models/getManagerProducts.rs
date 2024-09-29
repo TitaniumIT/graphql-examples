@@ -1,4 +1,5 @@
 use graphql_client::GraphQLQuery;
+use shared_types::EmailAddress;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -8,3 +9,5 @@ use graphql_client::GraphQLQuery;
     response_derives = "Debug,Clone"
 )]
 pub struct GetManagerProducts;
+
+type EmailAddressScalar = EmailAddress;
