@@ -25,6 +25,7 @@ type Mutation {
   buy(productId: String!, customerId: EmailAddressScalar!, amount: Int): Product
   deliver(productInTransitId: String!): ProductInTransit!
   cancel(productInTransitId: String!): ProductInTransit!
+  restock(productInBackorderId: String!): ProductInBackorder!
 }
 
 type PageInfo {

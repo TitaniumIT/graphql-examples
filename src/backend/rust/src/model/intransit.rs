@@ -38,6 +38,7 @@ impl ProductInTransit {
        let (s,_r) = &data.status_channel;
        s.send(self.clone()).unwrap();
     }
+    
 }
 
 #[graphql_object(context = Context,scalar=DefaultScalarValue)]

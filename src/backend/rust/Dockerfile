@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG RUST_VERSION=1.75.0
+ARG RUST_VERSION=1.80.1
 ARG APP_NAME=graphql-example
 
 ################################################################################

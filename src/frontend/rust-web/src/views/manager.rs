@@ -1,15 +1,36 @@
 
+use std::str::FromStr;
+
 use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
-use crate::{controls::bootstrap::{Card, Input, Table}, APIURL};
+use reqwest::Client;
+use crate::{controls::bootstrap::{Card, Input, Table}, models::{get_manager_products, GetManagerProducts}, APIURL};
 
 #[component]
 pub fn Manager() -> Element {
 
+    let fetch = use_resource(move || async move {
+
+     let client = Client::builder()
+        .default_headers(
+            std::iter::once((
+                reqwest::header::HeaderName::from_str("managersecret").unwrap(),
+                reqwest::header::HeaderValue::from_str("I'm Manager").unwrap()
+            )).collect(),
+        )
+        .build().unwrap(); 
     
+      let vars= get_manager_products::Variables{
+      };
 
+      let result = post_graphql::<GetManagerProducts,_>(&client, APIURL, vars)
+        .await
+        .unwrap();
 
+       result.data
+    });
+      
     rsx!{
        Card {
         title: "Manager",

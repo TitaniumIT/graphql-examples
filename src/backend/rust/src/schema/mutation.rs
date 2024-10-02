@@ -1,6 +1,6 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::{model::{intransit::ProductInTransit, product::Product}, scalars::{DefaultScalarValue, EmailAddressScalar}, Context};
+use crate::{model::{backorder::ProductInBackorder, intransit::ProductInTransit, product::Product}, scalars::{DefaultScalarValue, EmailAddressScalar}, Context};
 
 pub struct Mutation;
 
@@ -93,4 +93,28 @@ impl Mutation {
             }
         }
     }
-}
+
+    pub async fn restock<'ctx>(
+        context: &'ctx Context,
+        product_in_backorder_id: String,
+    ) -> FieldResult<ProductInBackorder> {
+        if !context.ismanager {
+            Err(FieldError::new(
+                "only mnanagers are allowed to restock",
+                graphql_value!(None),
+            ))
+        } else {
+            let mut in_backorder = context.data.products_in_backorders.write().await;
+            if let Some(index) = in_backorder.iter().position(|p| p.id() == &product_in_backorder_id)
+            {
+                let product_in_backlog = in_backorder.get_mut(index).unwrap();
+                product_in_backlog.restock(context.data.clone()).await;
+                Ok(product_in_backlog.clone())
+            } else {
+                Err(FieldError::new(
+                    format!("No product in transit found with id {product_in_backorder_id}"),
+                    graphql_value!(None),
+                ))
+            }
+        }
+    }}
