@@ -1,37 +1,43 @@
-
 use std::str::FromStr;
 
+use crate::{
+    controls::bootstrap::{Card, Input, Table},
+    models::{get_manager_products, GetManagerProducts},
+    APIURL,
+};
 use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
-use log::info;
 use reqwest::Client;
-use crate::{controls::bootstrap::{Card, Input, Table}, models::{get_manager_products, GetManagerProducts}, APIURL};
 
 #[component]
 pub fn Manager() -> Element {
 
     let fetch = use_resource(move || async move {
+        let client = Client::builder()
+            .default_headers(
+                std::iter::once((
+                    reqwest::header::HeaderName::from_str("managersecret").unwrap(),
+                    reqwest::header::HeaderValue::from_str("I`m Manager").unwrap(),
+                ))
+                .collect(),
+            )
+            .build()
+            .unwrap();
 
-     let client = Client::builder()
-        .default_headers(
-            std::iter::once((
-                reqwest::header::HeaderName::from_str("managersecret").unwrap(),
-                reqwest::header::HeaderValue::from_str("I'm Manager").unwrap()
-            )).collect(),
-        )
-        .build().unwrap(); 
-    
-      let vars= get_manager_products::Variables{
-      };
+        let vars = get_manager_products::Variables {};
 
-      let result = post_graphql::<GetManagerProducts,_>(&client, APIURL, vars)
-        .await
-        .unwrap();
-
-       result.data
+        let result = post_graphql::<GetManagerProducts, _>(&client, APIURL, vars)
+            .await
+            .unwrap();
+         
+        if result.errors.is_none() {
+          Ok( result.data.map(|f| f.all_products).unwrap())
+        } else {
+          Err("Fetch failed")
+        }
     });
-      
-    rsx!{
+
+    rsx! {
        Card {
         title: "Manager",
        Table {
@@ -41,6 +47,18 @@ pub fn Manager() -> Element {
             "BasketId",
             "Actions"
          ].map(String::from).to_vec()
+         match &*fetch.read() {
+            Some(Ok(response))=> {
+              response.iter().map(|p|
+                  rsx!{tr{
+                    td{"{p.id()}"}
+                    td{"{p.name()}"}
+                    td{"Actions"}}}
+                  )
+                },
+            Some(Err(e)) => std::iter::once( rsx!{} ) ,
+            None => todo!()
+          }
        }
       }
     }
