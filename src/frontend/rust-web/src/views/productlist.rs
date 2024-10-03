@@ -235,7 +235,7 @@ impl productView {
         let mut list = use_context::<Signal<ProductsInTransiteCache>>();
         list.with_mut(|c| {
             if let Some(index) = c.basket.iter().position(|p| p.read().id == data.id) {
-                c.basket[index].with_mut( |e|
+                c.basket[index].with_mut(|e| {
                     e.in_transit = data
                         .in_transit
                         .iter()
@@ -244,7 +244,8 @@ impl productView {
                             product_id: t.product_id.clone(),
                             state: t.state.clone(),
                         })
-                        .collect());
+                        .collect()
+                });
             } else {
                 c.basket.push(Signal::new(BasketView {
                     id: data.id,

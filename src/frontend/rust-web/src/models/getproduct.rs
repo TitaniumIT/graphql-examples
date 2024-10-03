@@ -14,4 +14,3 @@ impl get_product::productDetailView {
         self.selected_categories.iter().any(|c| c.id == category.id)
     }
 }
-

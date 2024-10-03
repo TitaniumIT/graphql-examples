@@ -2,13 +2,19 @@
 use controls::bootstrap::Card;
 use dioxus::prelude::*;
 use log::{info, LevelFilter};
-use views::{basket::{Basket, CustomerId, ProductsInTransiteCache}, productdetails::{LoadedCategories, Product}, productlist::{Products, ProductsCache}, manager::Manager};
+use views::{
+    basket::{Basket, CustomerId, ProductsInTransiteCache},
+    manager::Manager,
+    productdetails::{LoadedCategories, Product},
+    productlist::{Products, ProductsCache},
+};
 
 mod controls;
 mod models;
 mod views;
 
-static APIURL: &str = "http://graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080/graphql";
+static APIURL: &str =
+    "http://graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080/graphql";
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -59,4 +65,3 @@ fn Home() -> Element {
       }
     }
 }
-

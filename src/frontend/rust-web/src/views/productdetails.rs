@@ -2,10 +2,13 @@ use dioxus::prelude::*;
 use graphql_client::reqwest::post_graphql;
 use log::info;
 
-use crate::{controls::bootstrap::{Card, Input}, models::{get_product, GetProduct}, APIURL};
+use crate::{
+    controls::bootstrap::{Card, Input},
+    models::{get_product, GetProduct},
+    APIURL,
+};
 
 use super::productlist::ProductsCache;
-
 
 #[derive(Clone)]
 pub struct LoadedCategories(pub Option<Vec<get_product::categoryView>>);
@@ -28,12 +31,7 @@ pub fn Product() -> Element {
                     load_categories: loaded.read().0.is_none(),
                 };
 
-                let result = post_graphql::<GetProduct, _>(
-                    &client,
-                    APIURL,
-                    variables,
-                )
-                .await;
+                let result = post_graphql::<GetProduct, _>(&client, APIURL, variables).await;
 
                 if let Ok(result) = result {
                     if result.errors.is_none() {
@@ -63,7 +61,7 @@ pub fn Product() -> Element {
                 {
                     let list = use_context::<Signal<ProductsCache>>();
 
-                response.clone().product.map(|product| 
+                response.clone().product.map(|product|
                     rsx!{
                      Input {
                         value: "{product.name}",

@@ -14,10 +14,18 @@ pub enum CustomerId {
 
 impl CustomerId {
     fn is_not_default(&self) -> bool {
-       if let Self::Default = self { false } else { true }
+        if let Self::Default = self {
+            false
+        } else {
+            true
+        }
     }
     fn is_default(&self) -> bool {
-       if let Self::Default = self { true } else { false }
+        if let Self::Default = self {
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -31,9 +39,9 @@ impl Display for CustomerId {
     }
 }
 
-#[derive(Default,Clone)]
+#[derive(Default, Clone)]
 pub struct ProductsInTransiteCache {
-    pub basket: Vec<Signal<BasketView>>
+    pub basket: Vec<Signal<BasketView>>,
 }
 
 pub fn Basket() -> Element {
@@ -76,13 +84,13 @@ pub fn Basket() -> Element {
             }
         }
     }
-   }
+}
 
 #[component]
 fn BasketRowView(basket_row: Signal<BasketView>) -> Element {
     let row = basket_row.read();
     rsx! {
-       tr { 
+       tr {
          td { "{row.name}" }
          td { "{row.nrOrderd()}" }
          td { "{row.nrInTransit()}" }

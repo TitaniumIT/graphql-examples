@@ -1,4 +1,4 @@
-use graphql_client:: GraphQLQuery;
+use graphql_client::GraphQLQuery;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -6,7 +6,7 @@ use graphql_client:: GraphQLQuery;
     query_path = "src/models/getproducts.graphql",
     normalization = "rust",
     response_derives = "Debug,Clone,PartialEq,Eq,Default",
-    variables_derives = "Clone",
+    variables_derives = "Clone"
 )]
 pub struct GetProducts;
 
