@@ -1,0 +1,7 @@
+
+mutation deliver($productId:String!) {
+  response:deliver(productInTransitId:$productId){
+     id
+    actionsAllowed
+  }
+}

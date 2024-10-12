@@ -4,11 +4,10 @@ use shared_types::EmailAddress;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/schema.graphqls",
-    query_path = "src/models/buyproduct.graphql",
+    query_path = "src/models/basketEvents.graphql",
     normalization = "rust",
     response_derives = "Debug,Clone"
 )]
-pub struct BuyProduct;
+pub struct BasketEvents;
 
 type EmailAddressScalar = EmailAddress;
-

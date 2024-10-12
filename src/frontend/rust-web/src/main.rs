@@ -1,6 +1,8 @@
 #![allow(non_snake_case)]
 use controls::bootstrap::Card;
 use dioxus::prelude::*;
+use dioxus_logger::tracing::Level;
+use graphql_client::{GraphQLQuery, Response};
 use log::{info, LevelFilter};
 use views::{
     basket::{Basket, CustomerId, ProductsInTransiteCache},
@@ -14,7 +16,15 @@ mod models;
 mod views;
 
 static APIURL: &str =
-    "http://graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080/graphql";
+    "graphqlrust.g2achzdggfa3ayee.westeurope.azurecontainer.io:8080/graphql";
+
+fn http_endpoint() -> String {
+   format!("http://{}",APIURL)
+}
+
+fn ws_endpoint() -> String {
+    format!("ws://{}",APIURL)
+}
 
 #[derive(Clone, Routable, Debug, PartialEq)]
 enum Route {
@@ -26,7 +36,7 @@ enum Route {
 
 fn main() {
     // Init debug
-    dioxus_logger::init(LevelFilter::Info).expect("failed to init logger");
+    dioxus_logger::init(Level::INFO ).expect("failed to init logger");
     console_error_panic_hook::set_once();
 
     launch(App);
@@ -64,4 +74,14 @@ fn Home() -> Element {
         }
       }
     }
+}
+
+pub async fn post_graphql<Q: GraphQLQuery, U: reqwest::IntoUrl>(
+    client: &reqwest::Client,
+    url: U,
+    variables: Q::Variables,
+) -> Result<Response<Q::ResponseData>, reqwest::Error> {
+    let body = Q::build_query(variables);
+    let reqwest_response = client.post(url).json(&body).send().await?;
+    reqwest_response.json().await
 }

@@ -1,19 +1,13 @@
-use std::ops::IndexMut;
-
 use dioxus::prelude::*;
-use graphql_client::reqwest::post_graphql;
 use log::info;
 
 use crate::{
-    controls::bootstrap::Table,
-    models::{
+    controls::bootstrap::Table, http_endpoint, models::{
         buy_product,
         get_basket_products::{BasketView, BasketViewInTransit},
         get_products::{self, pageInfoView, productView},
         BuyProduct, GetProducts,
-    },
-    views::basket::ProductsInTransiteCache,
-    CustomerId, APIURL,
+    }, post_graphql, views::basket::ProductsInTransiteCache, CustomerId 
 };
 
 #[derive(Default, Clone)]
@@ -52,7 +46,7 @@ pub fn Products() -> Element {
 
         let variables = input_variables.read().clone();
 
-        let result = post_graphql::<GetProducts, _>(&client, APIURL, variables)
+        let result = post_graphql::<GetProducts, _>(&client, http_endpoint(), variables)
             .await
             .unwrap();
 
@@ -221,7 +215,7 @@ impl productView {
             p.data.in_stock -= 1;
         });
 
-        let result = post_graphql::<BuyProduct, _>(&client, APIURL, variables)
+        let result = post_graphql::<BuyProduct, _>(&client, http_endpoint(), variables)
             .await
             .unwrap();
 

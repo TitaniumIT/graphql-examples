@@ -26,11 +26,17 @@ impl get_basket_products::BasketView {
             .count()
     }
 
-    pub fn nrDeliverd(&self) -> i32 {
-        0
+    pub fn nrDeliverd(&self) -> usize {
+        self.in_transit
+            .iter()
+            .filter(|f| f.state == "Deliverd")
+            .count()
     }
 
-    pub fn nrCancelled(&self) -> i32 {
-        0
+    pub fn nrCancelled(&self) -> usize {
+        self.in_transit
+            .iter()
+            .filter(|f| f.state == "Cancelled")
+            .count()
     }
 }
