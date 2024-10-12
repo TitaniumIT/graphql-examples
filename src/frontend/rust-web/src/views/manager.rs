@@ -11,7 +11,7 @@ use reqwest::Client;
 
 #[component]
 pub fn Manager() -> Element {
-    let fetch = use_resource(move || async move {
+    let mut fetch: Resource<Result<Vec<GetManagerProductsAllProducts>, &str>> = use_resource(move || async move {
         let client = get_client();
 
         let vars = get_manager_products::Variables {};
@@ -31,6 +31,7 @@ pub fn Manager() -> Element {
        Card {
         title: "Manager",
         Table {
+          onrowclicked: move |_e| fetch.restart(),
           columns:[ "Product", "Name", "BasketId", "Actions" ].map(String::from).to_vec(),
              match &*fetch.read_unchecked() {
                 Some(Ok(response))=> rsx!{ { response.iter().map(|row| ManagerRow(row)) } },
@@ -96,7 +97,7 @@ fn managerAction(action:String,product_id:String) -> Element {
 }
 
 
-fn ManagerRow(product: &GetManagerProductsAllProducts) -> Element {
+fn ManagerRow(product: &GetManagerProductsAllProducts ) -> Element {
 
    let binding = product.actions_allowed().clone();
    let product_id = product.id(); 

@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
+use dioxus_logger::tracing::info;
 
 #[component]
 pub fn Input(value: String, label: String, readonly: bool, placeholder: Option<String>) -> Element {
@@ -40,7 +41,7 @@ pub fn Card(title: String, children: Element) -> Element {
 }
 
 #[component]
-pub fn Table(caption: Option<String>, columns: Vec<String>, children: Element) -> Element {
+pub fn Table(onrowclicked:Option<EventHandler<MouseEvent>>,caption: Option<String>, columns: Vec<String>, children: Element) -> Element {
     rsx! {
          table {
              class:"table table-sm",
@@ -56,6 +57,7 @@ pub fn Table(caption: Option<String>, columns: Vec<String>, children: Element) -
                }
                }
             tbody {
+                onclick: move |e| if let Some(handler) = onrowclicked { handler.call(e); },
                 { children }
             }
         }
