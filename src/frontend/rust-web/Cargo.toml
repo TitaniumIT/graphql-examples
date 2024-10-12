@@ -1,0 +1,28 @@
+[package]
+name = "rust-web"
+version = "0.1.0"
+authors = ["Marco Fuykschot <marcof@titaniumit.nl>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus = { version = "0.5.6", features = ["web", "router"] }
+
+
+# Debug
+log = "0.4.19"
+dioxus-logger = "0.5.1"
+console_error_panic_hook = "0.1.7"
+serde = "1.0.204"
+graphql_client = { version = "0.14.0" }
+reqwest ={ version = "0.12.8", features = ["json"] }
+reqwest-websocket = { version = "0.4.2", features = ["json"] }
+futures-util = "0.3.31"
+graphql-ws-client = { version = "0.10.2", features = ["client-graphql-client", "ws_stream_wasm"] }
+ws_stream_wasm = { version = "0.7.4", features = ["tokio_io"] }
+
+[dependencies.shared-types]
+path = "../../shared/types"
+
+[dev-dependencies]

@@ -1,4 +1,6 @@
-use crate::Context;
+use std::sync::Arc;
+
+use crate::{scalars::DefaultScalarValue, Context, StaticData};
 use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 use juniper::graphql_object;
 
@@ -15,9 +17,15 @@ impl ProductInBackorder {
             id: uuid::Uuid::new_v4().to_string(),
         }
     }
+     
+    pub async fn restock(&mut self,data: Arc<StaticData>)  {
+       let mut products = data.products.write().await;
+       let product = products.iter_mut().find(|p| p.id() == &self.product_id).unwrap();
+       product.restock();
+    }
 }
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 #[graphql(impl = IProductValue)]
 #[graphql(impl = AvailableActionsInterfaceTypeValue)]
 impl ProductInBackorder {

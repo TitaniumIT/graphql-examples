@@ -3,7 +3,7 @@ use std::{cmp::Ordering, sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 use crate::{
-    scalars::EmailAddressScalar, Context, StaticData
+    scalars::{DefaultScalarValue, EmailAddressScalar}, Context, StaticData
 };
 
 use super::{
@@ -93,7 +93,7 @@ impl Product {
     }
 }
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 #[graphql(impl = IProductValue)]
 #[graphql(impl = AvailableActionsInterfaceTypeValue)]
 impl Product {

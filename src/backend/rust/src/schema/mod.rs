@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use juniper::RootNode;
+use scalars::DefaultScalarValue;
 
 use crate::staticdata::StaticData;
 
@@ -20,9 +21,9 @@ pub struct Context {
 
 impl juniper::Context for Context {}
 
-pub type Schema = RootNode<'static, Query, Mutation, Subscriptions>;
+pub type Schema = RootNode<'static, Query, Mutation, Subscriptions,DefaultScalarValue>;
 
 pub fn schema() -> Schema {
-    Schema::new(Query, Mutation, Subscriptions)
+    Schema::new_with_scalar_value(Query, Mutation, Subscriptions)
 }
 

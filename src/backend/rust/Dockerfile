@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG RUST_VERSION=1.75.0
+ARG RUST_VERSION=1.80.1
 ARG APP_NAME=graphql-example
 
 ################################################################################
@@ -13,6 +13,7 @@ WORKDIR /app
 RUN apk add --no-cache clang lld musl-dev git
 
 RUN --mount=type=bind,source=src,target=src \
+    --mount=type=bind,from=shared,source=.,target=/shared/types \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
     --mount=type=cache,target=/app/target/ \

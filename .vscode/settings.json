@@ -1,8 +1,7 @@
 {
    "rust-analyzer.linkedProjects": [
-     "src\\backend\\rust\\Cargo.toml"
+     "${workspaceFolder}\\src\\backend\\rust\\Cargo.toml",
+     "${workspaceFolder}\\src\\frontend\\rust-web\\Cargo.toml",
+     "${workspaceFolder}\\src\\shared\\types\\Cargo.toml"
   ],
-  "yaml.schemas": {
-    "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "file:///d%3A/graphql-examples/src/compose-angular-rust"
-  }
 }

@@ -1,0 +1,6 @@
+mutation restock($productId:String!) {
+  response:restock(productId:$productId){
+    id
+    actionsAllowed
+  }
+}

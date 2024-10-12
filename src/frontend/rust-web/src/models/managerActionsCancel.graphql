@@ -1,0 +1,9 @@
+
+mutation cancel($productId:String!) {
+  response:cancel(productInTransitId:$productId){
+     id
+     actionsAllowed
+  }
+}
+
+

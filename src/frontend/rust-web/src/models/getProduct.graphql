@@ -1,0 +1,25 @@
+query getProduct($productId:String!,$loadCategories:Boolean!) {
+  product(productId:$productId){
+    ...productDetailView
+    }
+    categories @include(if: $loadCategories){
+     ...categoryView
+    }
+}
+
+fragment categoryView on Category{
+    id
+    name
+}
+
+fragment productDetailView on Product{
+    id
+    name
+    description
+    inStock
+    actionsAllowed
+    selectedCategories:categoriesWithoutBatchAsync{
+        id
+      }
+    }
+

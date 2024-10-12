@@ -1,0 +1,17 @@
+name: build
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build rust backend
+        working-directory: ${{ github.workspace}}/src/backend/rust
+        run: |
+          docker build --build-context shared=../../shared/types -t titaniumit/graphqlexample-rustbackend .
+      - name: build c# backend
+        working-directory: ${{ github.workspace}}/src/backend/c#
+        run: |
+          docker build -t titaniumit/graphqlexample-csharpbackend .

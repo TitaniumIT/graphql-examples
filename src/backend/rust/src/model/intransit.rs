@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use juniper::graphql_object;
 
-use crate::{ scalars::EmailAddressScalar, Context, StaticData};
+use crate::{ scalars::{DefaultScalarValue, EmailAddressScalar}, Context, StaticData};
 
 use super::{product::Product, AvailableActionsInterfaceTypeValue, IProductValue};
 
@@ -38,9 +38,10 @@ impl ProductInTransit {
        let (s,_r) = &data.status_channel;
        s.send(self.clone()).unwrap();
     }
+    
 }
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Context,scalar=DefaultScalarValue)]
 #[graphql(impl = IProductValue)]
 #[graphql(impl = AvailableActionsInterfaceTypeValue)]
 impl ProductInTransit {

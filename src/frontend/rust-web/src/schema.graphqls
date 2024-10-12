@@ -1,0 +1,97 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscriptions
+}
+
+interface AvailableActionsInterfaceType {
+  actionsAllowed: [String!]!
+}
+
+interface IProduct {
+  id: String!
+  name: String!
+  description: String!
+}
+
+scalar EmailAddressScalar
+
+type Category {
+  id: String!
+  name: String!
+}
+
+type Mutation {
+  buy(productId: String!, customerId: EmailAddressScalar!, amount: Int): Product
+  deliver(productInTransitId: String!): ProductInTransit!
+  cancel(productInTransitId: String!): ProductInTransit!
+  restock(productInBackorderId: String!): ProductInBackorder!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  startCursor: String
+  hasPreviousPage: Boolean!
+}
+
+type Product implements AvailableActionsInterfaceType & IProduct {
+  id: String!
+  name: String!
+  description: String!
+  inStock: Int!
+  actionsAllowed: [String!]!
+  categoriesWithoutBatchAsync: [Category!]!
+  productsInTransit(customerId: EmailAddressScalar!): [ProductInTransit!]!
+}
+
+type ProductConnection {
+  edges: [ProductEdge!]!
+  items: [Product!]!
+  totalCount: Int!
+  nodes: [Product!]!
+  pageInfo: PageInfo!
+}
+
+type ProductEdge {
+  node: Product!
+  cursor: String!
+}
+
+type ProductInBackorder implements AvailableActionsInterfaceType & IProduct {
+  productId: String!
+  id: String!
+  name: String!
+  description: String!
+  actionsAllowed: [String!]!
+}
+
+type ProductInTransit implements AvailableActionsInterfaceType & IProduct {
+  state: String!
+  productId: String!
+  id: String!
+  name: String!
+  description: String!
+  customerId: EmailAddressScalar!
+  actionsAllowed: [String!]!
+}
+
+type Query {
+  products: [Product!]!
+  productsSkipTake(skip: Int! = 0, take: Int! = 5): [Product!]!
+  productsRelay(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): ProductConnection!
+  product(productId: String!): Product
+  allProducts: [AllProductTypes!]!
+  categories: [Category!]
+}
+
+type Subscriptions {
+  statusChanged(customerId: EmailAddressScalar!): ProductInTransit!
+}
+
+union AllProductTypes = Product | ProductInBackorder | ProductInTransit
