@@ -7,29 +7,25 @@ currently the following client and server implementations are there:
 
 ## Frontends 
 
-- Angular 
-  tool stack: 
+- Angular tool stack: 
    - [angular](https://angular.dev/)
    - [apollo client](https://the-guild.dev/graphql/apollo-angular)
    - [graphql codegen](https://the-guild.dev/graphql/codegen)
-  [source](frontend/angular/)
+   - [source](frontend/angular/)
 
 
-- Dioxus
-  toolstack:
-    - [Dioxus](https://dioxuslabs.com/)
-    - [Graphql-client](https://crates.io/crates/graphql_client)
-  [source](frontend/rust-web/)
+- Dioxus toolstack:
+   - [Dioxus](https://dioxuslabs.com/)
+   - [Graphql-client](https://crates.io/crates/graphql_client)
+   - [source](frontend/rust-web/)
 
 ## Backends 
 
-- dotnet
-  toolstack:
+- dotnet toolstack:
     - [Graphql dotnet](https://graphql-dotnet.github.io/docs/getting-started/introduction/) 
-  [source](backend/c#/)
+    - [source](backend/c#/)
 
 - rust
   toolstack:
    - [Juniper](https://crates.io/crates/juniper)
-  [source](backend/rust/)
-
+   - [source](backend/rust/)
